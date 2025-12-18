@@ -1,4 +1,5 @@
 # Slime UI
+![Slime UI Logo](slime-ui.png)
 
 A modern React dashboard for visualizing system information collected by snail-core and stored in snailbus.
 
