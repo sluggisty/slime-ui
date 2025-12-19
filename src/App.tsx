@@ -10,7 +10,7 @@ function App() {
       <Route path="/" element={<Layout />}>
         <Route index element={<Dashboard />} />
         <Route path="hosts" element={<Hosts />} />
-        <Route path="hosts/:hostname" element={<HostDetail />} />
+        <Route path="hosts/:host_id" element={<HostDetail />} />
       </Route>
     </Routes>
   )

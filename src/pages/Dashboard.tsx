@@ -83,9 +83,9 @@ export default function Dashboard() {
             ) : (
               hosts.slice(0, 8).map((host) => (
                 <HostCard 
-                  key={host.hostname} 
+                  key={host.host_id} 
                   host={host} 
-                  onClick={() => navigate(`/hosts/${host.hostname}`)}
+                  onClick={() => navigate(`/hosts/${host.host_id}`)}
                 />
               ))
             )}
