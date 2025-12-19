@@ -14,7 +14,8 @@ export interface Report {
 }
 
 export interface HostSummary {
-  hostname: string
+  host_id: string  // Persistent UUID
+  hostname: string // Current hostname (may change)
   last_seen: string
 }
 

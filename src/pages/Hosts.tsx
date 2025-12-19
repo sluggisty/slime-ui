@@ -70,7 +70,7 @@ export default function Hosts() {
           },
         ]}
         data={hosts}
-        onRowClick={(host) => navigate(`/hosts/${host.hostname}`)}
+        onRowClick={(host) => navigate(`/hosts/${host.host_id}`)}
         loading={isLoading}
         emptyMessage="No hosts have reported yet. Install snail-core on your systems to start collecting data."
       />

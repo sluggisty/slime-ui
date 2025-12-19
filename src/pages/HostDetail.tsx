@@ -48,13 +48,13 @@ function CollapsibleSection({
 }
 
 export default function HostDetail() {
-  const { hostname } = useParams<{ hostname: string }>()
+  const { host_id } = useParams<{ host_id: string }>()
   const navigate = useNavigate()
   
   const { data: report, isLoading, error } = useQuery({
-    queryKey: ['host', hostname],
-    queryFn: () => api.getHost(hostname!),
-    enabled: !!hostname,
+    queryKey: ['host', host_id],
+    queryFn: () => api.getHost(host_id!),
+    enabled: !!host_id,
   })
   
   if (isLoading) {

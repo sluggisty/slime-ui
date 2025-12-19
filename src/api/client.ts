@@ -24,12 +24,12 @@ export const api = {
   // Hosts
   getHosts: () => fetchApi<HostsResponse>('/hosts'),
   
-  // Get full host data (returns the complete report)
-  getHost: (hostname: string) => fetchApi<Report>(`/hosts/${hostname}`),
+  // Get full host data (returns the complete report) by host_id (UUID)
+  getHost: (hostID: string) => fetchApi<Report>(`/hosts/${hostID}`),
   
-  // Delete a host
-  deleteHost: async (hostname: string) => {
-    const response = await fetch(`${API_BASE}/hosts/${hostname}`, { method: 'DELETE' })
+  // Delete a host by host_id (UUID)
+  deleteHost: async (hostID: string) => {
+    const response = await fetch(`${API_BASE}/hosts/${hostID}`, { method: 'DELETE' })
     if (!response.ok) {
       throw new Error(`Failed to delete host: ${response.status}`)
     }
