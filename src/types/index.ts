@@ -16,6 +16,8 @@ export interface Report {
 export interface HostSummary {
   host_id: string  // Persistent UUID
   hostname: string // Current hostname (may change)
+  os_name?: string  // Linux distribution name (e.g., "Fedora", "Debian")
+  os_version?: string // OS version (e.g., "42", "12")
   last_seen: string
 }
 
