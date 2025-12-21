@@ -16,10 +16,10 @@ export default function Sidebar() {
     <aside className={styles.sidebar}>
       <div className={styles.logo}>
         <div className={styles.logoIcon}>
-          <img src="/snail.svg" alt="Slime UI" />
+          <img src="/slime-ui-icon.png" alt="Sluggisty" />
         </div>
         <div className={styles.logoText}>
-          <span className={styles.logoName}>Slime UI</span>
+          <span className={styles.logoName}>Sluggisty</span>
           <span className={styles.logoTagline}>System Insights</span>
         </div>
       </div>

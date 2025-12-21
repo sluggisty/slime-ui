@@ -14,7 +14,7 @@ export default function Header() {
   
   const getTitle = () => {
     if (location.pathname.startsWith('/hosts/')) return 'Host Details'
-    return pageTitles[location.pathname] || 'Slime UI'
+    return pageTitles[location.pathname] || 'Sluggisty'
   }
   
   const handleRefresh = () => {
