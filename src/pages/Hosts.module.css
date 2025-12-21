@@ -93,9 +93,21 @@
 }
 
 .osCell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.osName {
   color: var(--color-text-primary);
   font-size: 0.875rem;
   font-weight: 500;
+}
+
+.osVersion {
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: 400;
 }
 
 .unknownOS {

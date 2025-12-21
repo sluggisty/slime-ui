@@ -11,6 +11,8 @@ import styles from './Hosts.module.css'
 export default function Hosts() {
   const navigate = useNavigate()
   const [selectedDistro, setSelectedDistro] = useState<string>('all')
+  const [selectedMajorVersion, setSelectedMajorVersion] = useState<string>('all')
+  const [selectedMinorVersion, setSelectedMinorVersion] = useState<string>('all')
   
   const { data, isLoading } = useQuery({
     queryKey: ['hosts'],
@@ -30,21 +32,109 @@ export default function Hosts() {
     return Array.from(distros).sort()
   }, [allHosts])
   
-  // Filter hosts by selected distribution
-  const hosts = useMemo(() => {
-    if (selectedDistro === 'all') {
-      return allHosts
-    }
-    return allHosts.filter(host => host.os_name === selectedDistro)
+  // Get unique major versions for selected distribution
+  const majorVersions = useMemo(() => {
+    if (selectedDistro === 'all') return []
+    const versions = new Set<string>()
+    allHosts.forEach(host => {
+      if (host.os_name === selectedDistro && host.os_version_major) {
+        versions.add(host.os_version_major)
+      }
+    })
+    return Array.from(versions).sort((a, b) => {
+      // Sort numerically if possible, otherwise alphabetically
+      const numA = parseInt(a, 10)
+      const numB = parseInt(b, 10)
+      if (!isNaN(numA) && !isNaN(numB)) {
+        return numB - numA // Descending order (newer first)
+      }
+      return b.localeCompare(a)
+    })
   }, [allHosts, selectedDistro])
   
-  // Format OS display string
+  // Get unique minor versions for selected distribution and major version
+  const minorVersions = useMemo(() => {
+    if (selectedDistro === 'all' || selectedMajorVersion === 'all') return []
+    const versions = new Set<string>()
+    allHosts.forEach(host => {
+      if (
+        host.os_name === selectedDistro &&
+        host.os_version_major === selectedMajorVersion &&
+        host.os_version_minor
+      ) {
+        versions.add(host.os_version_minor)
+      }
+    })
+    return Array.from(versions).sort((a, b) => {
+      // Sort numerically if possible, otherwise alphabetically
+      const numA = parseInt(a, 10)
+      const numB = parseInt(b, 10)
+      if (!isNaN(numA) && !isNaN(numB)) {
+        return numB - numA // Descending order (newer first)
+      }
+      return b.localeCompare(a)
+    })
+  }, [allHosts, selectedDistro, selectedMajorVersion])
+  
+  // Reset version filters when distribution changes
+  const handleDistroChange = (value: string) => {
+    setSelectedDistro(value)
+    setSelectedMajorVersion('all')
+    setSelectedMinorVersion('all')
+  }
+  
+  // Reset minor version filter when major version changes
+  const handleMajorVersionChange = (value: string) => {
+    setSelectedMajorVersion(value)
+    setSelectedMinorVersion('all')
+  }
+  
+  // Filter hosts by selected criteria
+  const hosts = useMemo(() => {
+    let filtered = allHosts
+    
+    if (selectedDistro !== 'all') {
+      filtered = filtered.filter(host => host.os_name === selectedDistro)
+    }
+    
+    if (selectedMajorVersion !== 'all') {
+      filtered = filtered.filter(host => host.os_version_major === selectedMajorVersion)
+    }
+    
+    if (selectedMinorVersion !== 'all') {
+      filtered = filtered.filter(host => host.os_version_minor === selectedMinorVersion)
+    }
+    
+    return filtered
+  }, [allHosts, selectedDistro, selectedMajorVersion, selectedMinorVersion])
+  
+  // Format OS display string with version components
   const formatOS = (host: HostSummary) => {
     if (!host.os_name) {
       return <span className={styles.unknownOS}>Unknown</span>
     }
-    const version = host.os_version ? ` ${host.os_version}` : ''
-    return `${host.os_name}${version}`
+    
+    // Build version string from components if available
+    let versionStr = ''
+    if (host.os_version_major) {
+      versionStr = host.os_version_major
+      if (host.os_version_minor) {
+        versionStr += `.${host.os_version_minor}`
+        if (host.os_version_patch) {
+          versionStr += `.${host.os_version_patch}`
+        }
+      }
+    } else if (host.os_version) {
+      // Fallback to full version string if components not available
+      versionStr = host.os_version
+    }
+    
+    return (
+      <div className={styles.osCell}>
+        <span className={styles.osName}>{host.os_name}</span>
+        {versionStr && <span className={styles.osVersion}>{versionStr}</span>}
+      </div>
+    )
   }
   
   return (
@@ -55,7 +145,7 @@ export default function Hosts() {
           <p className={styles.subtitle}>
             {selectedDistro === 'all' 
               ? `${data?.total ?? 0} systems reporting to Snailbus`
-              : `${hosts.length} of ${data?.total ?? 0} systems (${selectedDistro})`
+              : `${hosts.length} of ${data?.total ?? 0} systems${selectedMajorVersion !== 'all' ? ` (${selectedDistro} ${selectedMajorVersion}${selectedMinorVersion !== 'all' ? `.${selectedMinorVersion}` : ''})` : ` (${selectedDistro})`}`
             }
           </p>
         </div>
@@ -68,7 +158,7 @@ export default function Hosts() {
             <select
               id="distro-filter"
               value={selectedDistro}
-              onChange={(e) => setSelectedDistro(e.target.value)}
+              onChange={(e) => handleDistroChange(e.target.value)}
               className={styles.filterSelect}
             >
               <option value="all">All Distributions</option>
@@ -79,6 +169,48 @@ export default function Hosts() {
               ))}
             </select>
           </div>
+          
+          {selectedDistro !== 'all' && majorVersions.length > 0 && (
+            <div className={styles.filterGroup}>
+              <label htmlFor="major-version-filter" className={styles.filterLabel}>
+                Major Version:
+              </label>
+              <select
+                id="major-version-filter"
+                value={selectedMajorVersion}
+                onChange={(e) => handleMajorVersionChange(e.target.value)}
+                className={styles.filterSelect}
+              >
+                <option value="all">All Major Versions</option>
+                {majorVersions.map(version => (
+                  <option key={version} value={version}>
+                    {version}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+          
+          {selectedDistro !== 'all' && selectedMajorVersion !== 'all' && minorVersions.length > 0 && (
+            <div className={styles.filterGroup}>
+              <label htmlFor="minor-version-filter" className={styles.filterLabel}>
+                Minor Version:
+              </label>
+              <select
+                id="minor-version-filter"
+                value={selectedMinorVersion}
+                onChange={(e) => setSelectedMinorVersion(e.target.value)}
+                className={styles.filterSelect}
+              >
+                <option value="all">All Minor Versions</option>
+                {minorVersions.map(version => (
+                  <option key={version} value={version}>
+                    {version}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       </div>
       
