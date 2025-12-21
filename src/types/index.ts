@@ -1,4 +1,5 @@
 export interface ReportMeta {
+  host_id: string  // Persistent UUID identifier
   hostname: string
   collection_id: string
   timestamp: string
