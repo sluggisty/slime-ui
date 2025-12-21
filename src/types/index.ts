@@ -18,7 +18,10 @@ export interface HostSummary {
   host_id: string  // Persistent UUID
   hostname: string // Current hostname (may change)
   os_name?: string  // Linux distribution name (e.g., "Fedora", "Debian")
-  os_version?: string // OS version (e.g., "42", "12")
+  os_version?: string // OS version (full version string, e.g., "42", "12.2", "22.04")
+  os_version_major?: string // Major version number
+  os_version_minor?: string // Minor version number
+  os_version_patch?: string // Patch version number
   last_seen: string
 }
 
