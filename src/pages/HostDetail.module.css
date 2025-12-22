@@ -49,6 +49,12 @@
   flex: 1;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
 .headerInfo h1 {
   font-size: 1.75rem;
   font-weight: 600;
@@ -70,6 +76,64 @@
   gap: var(--space-xs);
   font-size: 0.875rem;
   color: var(--color-text-muted);
+}
+
+.deleteButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-sm);
+  color: var(--color-error);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.deleteButton:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #dc2626;
+}
+
+.modalCancelButton,
+.modalDeleteButton {
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid var(--color-border);
+}
+
+.modalCancelButton {
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+}
+
+.modalCancelButton:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+  border-color: var(--color-border-hover);
+}
+
+.modalDeleteButton {
+  background: var(--color-error);
+  color: white;
+  border-color: var(--color-error);
+}
+
+.modalDeleteButton:hover:not(:disabled) {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.modalCancelButton:disabled,
+.modalDeleteButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .errorsCard {

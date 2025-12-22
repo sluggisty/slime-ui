@@ -1,15 +1,16 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { 
   ArrowLeft, Server, Cpu, Network, Package, 
   Settings, Shield, Clock, AlertTriangle,
-  ChevronDown, ChevronRight, HardDrive
+  ChevronDown, ChevronRight, HardDrive, Trash2
 } from 'lucide-react'
 import { format, formatDistanceToNow } from 'date-fns'
 import { api } from '../api/client'
 import { Card } from '../components/Card'
 import { Badge } from '../components/Table'
+import { Modal } from '../components/Modal'
 import styles from './HostDetail.module.css'
 
 function DataItem({ label, value }: { label: string; value: string | number | undefined }) {
@@ -50,12 +51,33 @@ function CollapsibleSection({
 export default function HostDetail() {
   const { host_id } = useParams<{ host_id: string }>()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   
   const { data: report, isLoading, error } = useQuery({
     queryKey: ['host', host_id],
     queryFn: () => api.getHost(host_id!),
     enabled: !!host_id,
   })
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (!host_id) return
+    
+    setIsDeleting(true)
+    try {
+      await api.deleteHost(host_id)
+      // Invalidate queries and navigate back to hosts list
+      await queryClient.invalidateQueries({ queryKey: ['hosts'] })
+      await queryClient.invalidateQueries({ queryKey: ['host', host_id] })
+      navigate('/hosts')
+    } catch (error) {
+      console.error('Failed to delete host:', error)
+      alert('Failed to delete host. Please try again.')
+      setIsDeleting(false)
+    }
+  }
   
   if (isLoading) {
     return <div className={styles.loading}>Loading host data...</div>
@@ -112,6 +134,16 @@ export default function HostDetail() {
               Collected {format(new Date(meta.timestamp), 'MMM d, yyyy HH:mm')}
             </span>
           </div>
+        </div>
+        <div className={styles.headerActions}>
+          <button
+            className={styles.deleteButton}
+            onClick={() => setDeleteModalOpen(true)}
+            title="Delete host"
+          >
+            <Trash2 size={18} />
+            <span>Delete</span>
+          </button>
         </div>
       </div>
       
@@ -278,6 +310,42 @@ export default function HostDetail() {
           </CollapsibleSection>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          if (!isDeleting) {
+            setDeleteModalOpen(false)
+          }
+        }}
+        title="Delete Host"
+        footer={
+          <>
+            <button
+              className={styles.modalCancelButton}
+              onClick={() => setDeleteModalOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancel
+            </button>
+            <button
+              className={styles.modalDeleteButton}
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </>
+        }
+      >
+        <p>
+          Are you sure you want to delete <strong>{meta.hostname}</strong>?
+        </p>
+        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginTop: 'var(--space-sm)' }}>
+          This action cannot be undone. All data for this host will be permanently removed.
+        </p>
+      </Modal>
     </div>
   )
 }

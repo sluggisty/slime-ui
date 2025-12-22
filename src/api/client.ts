@@ -31,7 +31,8 @@ export const api = {
   deleteHost: async (hostID: string) => {
     const response = await fetch(`${API_BASE}/hosts/${hostID}`, { method: 'DELETE' })
     if (!response.ok) {
-      throw new Error(`Failed to delete host: ${response.status}`)
+      const error = await response.json().catch(() => ({ error: 'Unknown error' }))
+      throw new Error(error.error || `Failed to delete host: ${response.status}`)
     }
   },
 }

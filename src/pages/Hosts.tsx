@@ -1,18 +1,23 @@
 import { useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { Server, Clock, Filter } from 'lucide-react'
+import { Server, Clock, Filter, Trash2 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { api } from '../api/client'
 import { Table, Badge } from '../components/Table'
+import { Modal } from '../components/Modal'
 import type { HostSummary } from '../types'
 import styles from './Hosts.module.css'
 
 export default function Hosts() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const [selectedDistro, setSelectedDistro] = useState<string>('all')
   const [selectedMajorVersion, setSelectedMajorVersion] = useState<string>('all')
   const [selectedMinorVersion, setSelectedMinorVersion] = useState<string>('all')
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [hostToDelete, setHostToDelete] = useState<HostSummary | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   
   const { data, isLoading } = useQuery({
     queryKey: ['hosts'],
@@ -108,6 +113,32 @@ export default function Hosts() {
     return filtered
   }, [allHosts, selectedDistro, selectedMajorVersion, selectedMinorVersion])
   
+  // Handle delete button click
+  const handleDeleteClick = (e: React.MouseEvent, host: HostSummary) => {
+    e.stopPropagation() // Prevent row click navigation
+    setHostToDelete(host)
+    setDeleteModalOpen(true)
+  }
+
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (!hostToDelete) return
+    
+    setIsDeleting(true)
+    try {
+      await api.deleteHost(hostToDelete.host_id)
+      // Invalidate and refetch hosts list
+      await queryClient.invalidateQueries({ queryKey: ['hosts'] })
+      setDeleteModalOpen(false)
+      setHostToDelete(null)
+    } catch (error) {
+      console.error('Failed to delete host:', error)
+      alert('Failed to delete host. Please try again.')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   // Format OS display string with version components
   const formatOS = (host: HostSummary) => {
     if (!host.os_name) {
@@ -263,6 +294,19 @@ export default function Hosts() {
               )
             },
           },
+          {
+            key: 'actions',
+            header: 'Actions',
+            render: (host: HostSummary) => (
+              <button
+                className={styles.deleteButton}
+                onClick={(e) => handleDeleteClick(e, host)}
+                title="Delete host"
+              >
+                <Trash2 size={16} />
+              </button>
+            ),
+          },
         ]}
         data={hosts}
         onRowClick={(host) => navigate(`/hosts/${host.host_id}`)}
@@ -273,6 +317,46 @@ export default function Hosts() {
             : `No hosts found with distribution "${selectedDistro}".`
         }
       />
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          if (!isDeleting) {
+            setDeleteModalOpen(false)
+            setHostToDelete(null)
+          }
+        }}
+        title="Delete Host"
+        footer={
+          <>
+            <button
+              className={styles.modalCancelButton}
+              onClick={() => {
+                setDeleteModalOpen(false)
+                setHostToDelete(null)
+              }}
+              disabled={isDeleting}
+            >
+              Cancel
+            </button>
+            <button
+              className={styles.modalDeleteButton}
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </button>
+          </>
+        }
+      >
+        <p>
+          Are you sure you want to delete <strong>{hostToDelete?.hostname}</strong>?
+        </p>
+        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginTop: 'var(--space-sm)' }}>
+          This action cannot be undone. All data for this host will be permanently removed.
+        </p>
+      </Modal>
     </div>
   )
 }
