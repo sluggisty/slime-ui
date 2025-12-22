@@ -73,13 +73,14 @@
 
 .filterSelect {
   padding: var(--space-xs) var(--space-sm);
-  background: var(--color-bg-secondary);
+  background: var(--color-bg-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   color: var(--color-text-primary);
   font-size: 0.875rem;
   cursor: pointer;
   transition: all 0.2s;
+  min-width: 120px;
 }
 
 .filterSelect:hover {
@@ -90,6 +91,19 @@
   outline: none;
   border-color: var(--color-accent);
   box-shadow: 0 0 0 2px rgba(132, 204, 22, 0.2);
+}
+
+/* Style the dropdown options - ensure they're visible */
+.filterSelect option {
+  background: var(--color-bg-card) !important;
+  color: var(--color-text-primary) !important;
+  padding: var(--space-xs);
+}
+
+/* For browsers that support styling select options */
+.filterSelect optgroup {
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
 }
 
 .osCell {

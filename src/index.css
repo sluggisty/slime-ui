@@ -112,6 +112,32 @@ code, pre {
   font-family: var(--font-mono);
 }
 
+/* Global select and option styling for dark theme */
+select {
+  background-color: var(--color-bg-card);
+  color: var(--color-text-primary);
+}
+
+select option {
+  background-color: var(--color-bg-card) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* For Firefox */
+select:-moz-focusring {
+  color: transparent;
+  text-shadow: 0 0 0 var(--color-text-primary);
+}
+
+/* Ensure select dropdowns are visible */
+select:not(:disabled):hover {
+  background-color: var(--color-bg-hover);
+}
+
+select:not(:disabled):focus {
+  background-color: var(--color-bg-card);
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;
