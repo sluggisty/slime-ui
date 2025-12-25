@@ -169,3 +169,52 @@ export interface HealthResponse {
   database: string
 }
 
+// Auth types
+export interface User {
+  id: string
+  username: string
+  email: string
+  is_active: boolean
+  is_admin: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface LoginRequest {
+  username: string
+  password: string
+}
+
+export interface RegisterRequest {
+  username: string
+  email: string
+  password: string
+}
+
+export interface LoginResponse {
+  user: User
+  token: string // API key
+}
+
+export interface APIKey {
+  id: string
+  user_id: string
+  name: string
+  last_used_at?: string
+  expires_at?: string
+  created_at: string
+}
+
+export interface CreateAPIKeyRequest {
+  name: string
+  expires_at?: string
+}
+
+export interface CreateAPIKeyResponse {
+  id: string
+  key: string // Plain key, shown only once
+  name: string
+  expires_at?: string
+  created_at: string
+}
+

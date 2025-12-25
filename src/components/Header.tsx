@@ -1,6 +1,7 @@
-import { useLocation } from 'react-router-dom'
-import { RefreshCw } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { RefreshCw, LogOut } from 'lucide-react'
 import { useQueryClient } from '@tanstack/react-query'
+import { auth } from '../api/auth'
 import styles from './Header.module.css'
 
 const pageTitles: Record<string, string> = {
@@ -10,6 +11,7 @@ const pageTitles: Record<string, string> = {
 
 export default function Header() {
   const location = useLocation()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   
   const getTitle = () => {
@@ -19,6 +21,11 @@ export default function Header() {
   
   const handleRefresh = () => {
     queryClient.invalidateQueries()
+  }
+
+  const handleLogout = () => {
+    auth.removeApiKey()
+    navigate('/login')
   }
   
   return (
@@ -35,6 +42,13 @@ export default function Header() {
           title="Refresh data"
         >
           <RefreshCw size={18} />
+        </button>
+        <button 
+          className={styles.iconButton}
+          onClick={handleLogout}
+          title="Logout"
+        >
+          <LogOut size={18} />
         </button>
       </div>
     </header>
