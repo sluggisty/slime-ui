@@ -40,3 +40,4 @@ export function StatCard({ title, value, subtitle, icon, color = 'default' }: St
   )
 }
 
+
