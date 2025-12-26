@@ -191,8 +191,7 @@ export interface RegisterRequest {
   username: string
   email: string
   password: string
-  org_id: string
-  role: 'admin' | 'editor' | 'viewer'
+  org_name: string
 }
 
 export interface LoginResponse {
