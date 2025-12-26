@@ -176,6 +176,8 @@ export interface User {
   email: string
   is_active: boolean
   is_admin: boolean
+  org_id: string
+  role: 'admin' | 'editor' | 'viewer'
   created_at: string
   updated_at: string
 }
@@ -189,6 +191,8 @@ export interface RegisterRequest {
   username: string
   email: string
   password: string
+  org_id: string
+  role: 'admin' | 'editor' | 'viewer'
 }
 
 export interface LoginResponse {
