@@ -7,7 +7,7 @@ import { auth } from './auth'
 
 const API_BASE = '/api/v1'
 
-async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const apiKey = auth.getApiKey()
   
   const headers: HeadersInit = {

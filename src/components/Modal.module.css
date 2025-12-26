@@ -70,6 +70,53 @@
   justify-content: flex-end;
 }
 
+.cancelButton,
+.confirmButton,
+.dangerButton {
+  padding: var(--space-sm) var(--space-md);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancelButton {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.cancelButton:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+}
+
+.confirmButton {
+  background: var(--color-accent);
+  color: white;
+}
+
+.confirmButton:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.dangerButton {
+  background: #ef4444;
+  color: white;
+}
+
+.dangerButton:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.cancelButton:disabled,
+.confirmButton:disabled,
+.dangerButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
