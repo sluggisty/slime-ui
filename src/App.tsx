@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Dashboard from './pages/Dashboard'
 import Hosts from './pages/Hosts'
 import HostDetail from './pages/HostDetail'
+import UserAccess from './pages/UserAccess'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import { auth } from './api/auth'
@@ -31,6 +32,11 @@ function App() {
         <Route path="hosts/:host_id" element={
           <ProtectedRoute>
             <HostDetail />
+          </ProtectedRoute>
+        } />
+        <Route path="users" element={
+          <ProtectedRoute>
+            <UserAccess />
           </ProtectedRoute>
         } />
       </Route>

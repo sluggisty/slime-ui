@@ -8,10 +8,47 @@ interface ModalProps {
   title: string
   children: ReactNode
   footer?: ReactNode
+  // Alternative API for confirmation modals
+  onConfirm?: () => void
+  confirmText?: string
+  cancelText?: string
+  isConfirming?: boolean
+  variant?: 'default' | 'danger'
 }
 
-export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) {
+export function Modal({ 
+  isOpen, 
+  onClose, 
+  title, 
+  children, 
+  footer,
+  onConfirm,
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  isConfirming = false,
+  variant = 'default'
+}: ModalProps) {
   if (!isOpen) return null
+
+  // Use footer if provided, otherwise use onConfirm pattern
+  const modalFooter = footer || (onConfirm ? (
+    <>
+      <button
+        className={variant === 'danger' ? styles.dangerButton : styles.cancelButton}
+        onClick={onClose}
+        disabled={isConfirming}
+      >
+        {cancelText}
+      </button>
+      <button
+        className={variant === 'danger' ? styles.dangerButton : styles.confirmButton}
+        onClick={onConfirm}
+        disabled={isConfirming}
+      >
+        {isConfirming ? 'Processing...' : confirmText}
+      </button>
+    </>
+  ) : null)
 
   return (
     <div className={styles.overlay} onClick={onClose}>
@@ -25,9 +62,9 @@ export function Modal({ isOpen, onClose, title, children, footer }: ModalProps) 
         <div className={styles.content}>
           {children}
         </div>
-        {footer && (
+        {modalFooter && (
           <div className={styles.footer}>
-            {footer}
+            {modalFooter}
           </div>
         )}
       </div>

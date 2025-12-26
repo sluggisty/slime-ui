@@ -221,3 +221,14 @@ export interface CreateAPIKeyResponse {
   created_at: string
 }
 
+export interface CreateUserRequest {
+  username: string
+  email: string
+  password: string
+  role: 'admin' | 'editor' | 'viewer'
+}
+
+export interface UpdateUserRoleRequest {
+  role: 'admin' | 'editor' | 'viewer'
+}
+

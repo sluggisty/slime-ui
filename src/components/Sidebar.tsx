@@ -1,9 +1,12 @@
 import { NavLink } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { 
   LayoutDashboard, 
   Server, 
-  Activity
+  Activity,
+  Users
 } from 'lucide-react'
+import { authApi, auth } from '../api/auth'
 import styles from './Sidebar.module.css'
 
 const navItems = [
@@ -11,7 +14,17 @@ const navItems = [
   { path: '/hosts', icon: Server, label: 'Hosts' },
 ]
 
-export default function Sidebar() {  
+export default function Sidebar() {
+  const { data: currentUser } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: authApi.getMe,
+    enabled: auth.isAuthenticated(),
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  })
+
+  const isAdmin = currentUser?.role === 'admin'
+  
   return (
     <aside className={styles.sidebar}>
       <div className={styles.logo}>
@@ -41,6 +54,21 @@ export default function Sidebar() {
             </NavLink>
           ))}
         </div>
+        
+        {isAdmin && (
+          <div className={styles.navSection}>
+            <span className={styles.navSectionTitle}>Administration</span>
+            <NavLink
+              to="/users"
+              className={({ isActive }) => 
+                `${styles.navLink} ${isActive ? styles.active : ''}`
+              }
+            >
+              <Users size={20} />
+              <span>User Access</span>
+            </NavLink>
+          </div>
+        )}
       </nav>
       
       <div className={styles.footer}>
