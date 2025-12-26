@@ -11,8 +11,7 @@ export default function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [orgId, setOrgId] = useState('')
-  const [role, setRole] = useState<'admin' | 'editor' | 'viewer'>('viewer')
+  const [orgName, setOrgName] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -36,7 +35,7 @@ export default function Register() {
     setLoading(true)
 
     try {
-      const request: RegisterRequest = { username, email, password, org_id: orgId, role }
+      const request: RegisterRequest = { username, email, password, org_name: orgName }
       await authApi.register(request)
       
       // Registration successful - automatically log in
@@ -155,46 +154,28 @@ export default function Register() {
           </div>
 
           <div className={styles.inputGroup}>
-            <label htmlFor="orgId">
+            <label htmlFor="orgName">
               <Building2 size={16} />
-              Organization ID
+              Organization Name
             </label>
             <input
-              id="orgId"
+              id="orgName"
               type="text"
-              value={orgId}
-              onChange={(e) => setOrgId(e.target.value)}
+              value={orgName}
+              onChange={(e) => setOrgName(e.target.value)}
               required
               disabled={loading}
-              placeholder="Enter organization UUID"
+              placeholder="Enter your organization name"
+              minLength={1}
+              maxLength={100}
             />
-            <span className={styles.hint}>UUID of the organization to join</span>
-          </div>
-
-          <div className={styles.inputGroup}>
-            <label htmlFor="role">
-              <User size={16} />
-              Role
-            </label>
-            <select
-              id="role"
-              value={role}
-              onChange={(e) => setRole(e.target.value as 'admin' | 'editor' | 'viewer')}
-              required
-              disabled={loading}
-              className={styles.select}
-            >
-              <option value="viewer">Viewer</option>
-              <option value="editor">Editor</option>
-              <option value="admin">Admin</option>
-            </select>
-            <span className={styles.hint}>Your role in the organization</span>
+            <span className={styles.hint}>A new organization will be created for you. You will be assigned as admin.</span>
           </div>
 
           <button
             type="submit"
             className={styles.submitButton}
-            disabled={loading || !username || !email || !password || !confirmPassword || !orgId || !role}
+            disabled={loading || !username || !email || !password || !confirmPassword || !orgName}
           >
             {loading ? 'Creating account...' : 'Create Account'}
           </button>
