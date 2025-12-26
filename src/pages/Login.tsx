@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { LogIn, User, Lock, AlertCircle } from 'lucide-react'
 import { authApi, auth } from '../api/auth'
 import type { LoginRequest } from '../types'
@@ -7,10 +7,14 @@ import styles from './Login.module.css'
 
 export default function Login() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // Check for success message from registration
+  const successMessage = location.state?.message
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -45,6 +49,11 @@ export default function Login() {
         </div>
 
         <form onSubmit={handleSubmit} className={styles.form}>
+          {successMessage && (
+            <div className={styles.success}>
+              <span>{successMessage}</span>
+            </div>
+          )}
           {error && (
             <div className={styles.error}>
               <AlertCircle size={16} />
@@ -90,6 +99,13 @@ export default function Login() {
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
+
+          <div className={styles.footer}>
+            <span>Don't have an account?</span>
+            <Link to="/register" className={styles.link}>
+              Sign up
+            </Link>
+          </div>
         </form>
       </div>
     </div>

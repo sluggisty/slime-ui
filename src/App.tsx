@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard'
 import Hosts from './pages/Hosts'
 import HostDetail from './pages/HostDetail'
 import Login from './pages/Login'
+import Register from './pages/Register'
 import { auth } from './api/auth'
 
 function App() {
@@ -12,6 +13,9 @@ function App() {
     <Routes>
       <Route path="/login" element={
         auth.isAuthenticated() ? <Navigate to="/" replace /> : <Login />
+      } />
+      <Route path="/register" element={
+        auth.isAuthenticated() ? <Navigate to="/" replace /> : <Register />
       } />
       <Route path="/" element={<Layout />}>
         <Route index element={
