@@ -7,6 +7,16 @@ import { auth } from './auth'
 
 const API_BASE = '/api/v1'
 
+// Convert relative URLs to absolute in Node.js test environment (only when TEST_API_CLIENT env var is set)
+const getApiUrl = (endpoint: string): string => {
+  const fullPath = `${API_BASE}${endpoint}`
+  // Only convert if TEST_API_CLIENT env var is set (only for API client tests)
+  if (fullPath.startsWith('/') && typeof process !== 'undefined' && process.env.TEST_API_CLIENT === 'true') {
+    return `http://localhost${fullPath}`
+  }
+  return fullPath
+}
+
 export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const apiKey = auth.getApiKey()
   
@@ -19,7 +29,7 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
     headers['X-API-Key'] = apiKey
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
+  const response = await fetch(getApiUrl(endpoint), {
     ...options,
     headers,
   })
