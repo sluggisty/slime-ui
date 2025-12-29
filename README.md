@@ -88,49 +88,27 @@ slime-ui/
 
 ## Testing
 
-### Unit and Integration Tests
+For comprehensive testing documentation, see [TESTING.md](./TESTING.md).
 
-Run unit and integration tests with Vitest:
+### Quick Start
 
+**Unit and Integration Tests:**
 ```bash
-# Run tests in watch mode
-npm test
-
-# Run tests once
-npm run test:run
-
-# Run tests with UI
-npm run test:ui
-
-# Generate coverage report
-npm run test:coverage
+npm test              # Watch mode
+npm run test:run      # Run once
+npm run test:ui       # Interactive UI
+npm run test:coverage # Coverage report
 ```
 
-### End-to-End Tests
-
-E2E tests use Playwright and require **both** the frontend dev server and the backend API to be running:
-
-1. **Start the backend API server** (snailbus) on `http://localhost:8080`
-2. **Run the E2E tests** (Playwright will automatically start the frontend dev server):
-
+**End-to-End Tests:**
 ```bash
-# Run all E2E tests
-npm run test:e2e
-
-# Run E2E tests with UI mode
-npm run test:e2e:ui
-
-# Run E2E tests in debug mode
-npm run test:e2e:debug
-
-# Run E2E tests in headed mode (see browser)
-npm run test:e2e:headed
-
-# View last test report
-npm run test:e2e:report
+# Ensure backend API is running on http://localhost:8080
+npm run test:e2e      # Run all E2E tests
+npm run test:e2e:ui   # Interactive UI mode
+npm run test:e2e:debug # Debug mode
 ```
 
-**Important:** The backend API server must be running before running E2E tests. If you see `ECONNREFUSED` errors, ensure the snailbus API is running on port 8080.
+**Important:** E2E tests require the snailbus API server to be running on port 8080. See [TESTING.md](./TESTING.md) for detailed information about running tests, writing new tests, and troubleshooting.
 
 ## License
 
