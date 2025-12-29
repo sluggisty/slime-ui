@@ -24,4 +24,11 @@ dist-ssr
 *.sln
 *.sw?
 
+# Playwright
+/playwright-report/
+/test-results/
+/playwright/.cache/
+/playwright/.auth/
+/e2e/.auth/
+
 
