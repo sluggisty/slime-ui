@@ -1,16 +1,9 @@
-import { test, expect } from '@playwright/test'
-import { loginUser, waitForApiCalls, waitForPageLoad } from './test-helpers'
+import { test, expect } from './fixtures'
+import { waitForApiCalls } from './test-helpers'
 
 test.describe('Dashboard', () => {
-  test.beforeEach(async ({ page }) => {
-    // Login before each test
-    // Note: This requires a backend with test user 'testuser'/'testpass'
-    // If backend is not available, tests will fail
-    await loginUser(page, 'testuser', 'testpass')
-    await waitForPageLoad(page)
-  })
-
-  test('should display dashboard with host statistics', async ({ page }) => {
+  test('should display dashboard with host statistics', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     await page.goto('/')
     await waitForApiCalls(page)
     
@@ -29,7 +22,8 @@ test.describe('Dashboard', () => {
     expect(count).toBeGreaterThanOrEqual(3)
   })
 
-  test('should display host list when hosts are available', async ({ page }) => {
+  test('should display host list when hosts are available', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     await page.goto('/')
     await waitForApiCalls(page)
     
@@ -48,7 +42,8 @@ test.describe('Dashboard', () => {
     expect(hasHosts || hasHostCards > 0).toBe(true)
   })
 
-  test('should display empty state when no hosts are available', async ({ page }) => {
+  test('should display empty state when no hosts are available', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     await page.goto('/')
     await waitForApiCalls(page)
     
@@ -64,7 +59,8 @@ test.describe('Dashboard', () => {
     }
   })
 
-  test('should navigate to hosts page when View All is clicked', async ({ page }) => {
+  test('should navigate to hosts page when View All is clicked', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     await page.goto('/')
     await waitForApiCalls(page)
     
@@ -80,7 +76,8 @@ test.describe('Dashboard', () => {
     await expect(page.getByText(/all hosts|hosts/i)).toBeVisible()
   })
 
-  test('should navigate to host detail when host card is clicked', async ({ page }) => {
+  test('should navigate to host detail when host card is clicked', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     await page.goto('/')
     await waitForApiCalls(page)
     
@@ -106,7 +103,8 @@ test.describe('Dashboard', () => {
     }
   })
 
-  test('should display correct stat card data', async ({ page }) => {
+  test('should display correct stat card data', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     await page.goto('/')
     await waitForApiCalls(page)
     
@@ -129,7 +127,8 @@ test.describe('Dashboard', () => {
     expect(staleHostsValue).toMatch(/^\d+$/)
   })
 
-  test('should display host cards with host information', async ({ page }) => {
+  test('should display host cards with host information', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     await page.goto('/')
     await waitForApiCalls(page)
     
@@ -156,7 +155,8 @@ test.describe('Dashboard', () => {
     }
   })
 
-  test('should refresh data when refresh button is clicked', async ({ page }) => {
+  test('should refresh data when refresh button is clicked', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     await page.goto('/')
     await waitForApiCalls(page)
     
@@ -174,7 +174,8 @@ test.describe('Dashboard', () => {
     await expect(page.getByText('Total Hosts')).toBeVisible()
   })
 
-  test('should display loading state while fetching data', async ({ page }) => {
+  test('should display loading state while fetching data', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     // Navigate to dashboard
     await page.goto('/')
     

@@ -1,16 +1,9 @@
-import { test, expect } from '@playwright/test'
-import { loginUser, waitForApiCalls, waitForPageLoad } from './test-helpers'
+import { test, expect } from './fixtures'
+import { waitForApiCalls } from './test-helpers'
 
 test.describe('Hosts', () => {
-  test.beforeEach(async ({ page }) => {
-    // Login before each test
-    // Note: This requires a backend with test user 'testuser'/'testpass'
-    // If backend is not available, tests will fail
-    await loginUser(page, 'testuser', 'testpass')
-    await waitForPageLoad(page)
-  })
-
-  test('should display hosts page with list of hosts', async ({ page }) => {
+  test('should display hosts page with list of hosts', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     await page.goto('/hosts')
     await waitForApiCalls(page)
     
@@ -31,7 +24,8 @@ test.describe('Hosts', () => {
     expect(hasHosts || hasEmptyState).toBe(true)
   })
 
-  test('should display hosts in table format', async ({ page }) => {
+  test('should display hosts in table format', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     await page.goto('/hosts')
     await waitForApiCalls(page)
     
@@ -57,7 +51,8 @@ test.describe('Hosts', () => {
     }
   })
 
-  test('should filter hosts by distribution', async ({ page }) => {
+  test('should filter hosts by distribution', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     await page.goto('/hosts')
     await waitForApiCalls(page)
     
@@ -92,7 +87,8 @@ test.describe('Hosts', () => {
     }
   })
 
-  test('should filter hosts by major version when distribution is selected', async ({ page }) => {
+  test('should filter hosts by major version when distribution is selected', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     await page.goto('/hosts')
     await waitForApiCalls(page)
     
@@ -137,7 +133,8 @@ test.describe('Hosts', () => {
     }
   })
 
-  test('should navigate to host detail when row is clicked', async ({ page }) => {
+  test('should navigate to host detail when row is clicked', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     await page.goto('/hosts')
     await waitForApiCalls(page)
     
@@ -163,7 +160,8 @@ test.describe('Hosts', () => {
     }
   })
 
-  test('should display host detail page correctly', async ({ page }) => {
+  test('should display host detail page correctly', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     await page.goto('/hosts')
     await waitForApiCalls(page)
     
@@ -192,7 +190,8 @@ test.describe('Hosts', () => {
     }
   })
 
-  test('should open delete modal when delete button is clicked', async ({ page }) => {
+  test('should open delete modal when delete button is clicked', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     await page.goto('/hosts')
     await waitForApiCalls(page)
     
@@ -226,7 +225,8 @@ test.describe('Hosts', () => {
     }
   })
 
-  test('should cancel delete operation when Cancel is clicked', async ({ page }) => {
+  test('should cancel delete operation when Cancel is clicked', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     await page.goto('/hosts')
     await waitForApiCalls(page)
     
@@ -263,7 +263,8 @@ test.describe('Hosts', () => {
     }
   })
 
-  test('should delete host when confirmed', async ({ page }) => {
+  test('should delete host when confirmed', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     await page.goto('/hosts')
     await waitForApiCalls(page)
     
@@ -315,7 +316,8 @@ test.describe('Hosts', () => {
     }
   })
 
-  test('should navigate back to hosts list from host detail', async ({ page }) => {
+  test('should navigate back to hosts list from host detail', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     await page.goto('/hosts')
     await waitForApiCalls(page)
     
@@ -345,7 +347,8 @@ test.describe('Hosts', () => {
     }
   })
 
-  test('should display loading state while fetching hosts', async ({ page }) => {
+  test('should display loading state while fetching hosts', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     await page.goto('/hosts')
     
     // Immediately check for loading state (before data loads)
@@ -365,7 +368,8 @@ test.describe('Hosts', () => {
     await expect(page.getByText('All Hosts')).toBeVisible()
   })
 
-  test('should display empty state message when no hosts match filter', async ({ page }) => {
+  test('should display empty state message when no hosts match filter', async ({ authenticatedPage }) => {
+    const page = authenticatedPage
     await page.goto('/hosts')
     await waitForApiCalls(page)
     
