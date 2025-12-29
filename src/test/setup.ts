@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom'
 import { afterEach } from 'vitest'
 import { cleanup } from '@testing-library/react'
+import './server' // Import MSW server setup
 
 // Cleanup after each test
 afterEach(() => {
