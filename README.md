@@ -25,7 +25,7 @@ A modern React dashboard for visualizing system information collected by snail-c
 
 ### Prerequisites
 
-- Node.js 18+ and npm
+- Node.js 24+ and npm
 - snailbus API running on `http://localhost:8080`
 
 ### Installation
