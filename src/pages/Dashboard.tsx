@@ -1,3 +1,4 @@
+import React, { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { Server, AlertTriangle, Clock, Activity } from 'lucide-react'
@@ -17,19 +18,18 @@ export default function Dashboard() {
   })
   
   const totalHosts = hostsData?.total ?? 0
-  const hosts = hostsData?.hosts ?? []
-  const hostsWithErrors = hosts.filter(h => {
-    // Check if host has errors by trying to get full report
-    // For now, we'll just show total hosts
-    return false
-  }).length
+  const hosts = useMemo(() => hostsData?.hosts ?? [], [hostsData?.hosts])
   
   // Calculate active hosts (seen in last hour)
-  const activeHosts = hosts.filter(h => {
-    const lastSeen = new Date(h.last_seen)
-    const hourAgo = new Date(Date.now() - 60 * 60 * 1000)
-    return lastSeen > hourAgo
-  }).length
+  // Calculate hourAgo once using useMemo to avoid calling Date.now() during render
+  // eslint-disable-next-line react-hooks/purity
+  const hourAgo = useMemo(() => new Date(Date.now() - 60 * 60 * 1000), [])
+  const activeHosts = useMemo(() => {
+    return hosts.filter(h => {
+      const lastSeen = new Date(h.last_seen)
+      return lastSeen > hourAgo
+    }).length
+  }, [hosts, hourAgo])
   
   return (
     <div className={styles.dashboard}>
@@ -84,7 +84,8 @@ export default function Dashboard() {
               hosts.slice(0, 8).map((host) => (
                 <HostCard 
                   key={host.host_id} 
-                  host={host} 
+                  host={host}
+                  hourAgo={hourAgo}
                   onClick={() => navigate(`/hosts/${host.host_id}`)}
                 />
               ))
@@ -96,9 +97,8 @@ export default function Dashboard() {
   )
 }
 
-function HostCard({ host, onClick }: { host: HostSummary; onClick: () => void }) {
+function HostCard({ host, onClick, hourAgo }: { host: HostSummary; onClick: () => void; hourAgo: Date }) {
   const lastSeen = new Date(host.last_seen)
-  const hourAgo = new Date(Date.now() - 60 * 60 * 1000)
   const isActive = lastSeen > hourAgo
   
   return (

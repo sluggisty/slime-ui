@@ -24,10 +24,9 @@ export default function Hosts() {
     queryFn: api.getHosts,
   })
   
-  const allHosts = data?.hosts ?? []
-  
   // Get unique distributions for filter dropdown
   const distributions = useMemo(() => {
+    const allHosts = data?.hosts ?? []
     const distros = new Set<string>()
     allHosts.forEach(host => {
       if (host.os_name) {
@@ -35,10 +34,11 @@ export default function Hosts() {
       }
     })
     return Array.from(distros).sort()
-  }, [allHosts])
+  }, [data?.hosts])
   
   // Get unique major versions for selected distribution
   const majorVersions = useMemo(() => {
+    const allHosts = data?.hosts ?? []
     if (selectedDistro === 'all') return []
     const versions = new Set<string>()
     allHosts.forEach(host => {
@@ -55,10 +55,11 @@ export default function Hosts() {
       }
       return b.localeCompare(a)
     })
-  }, [allHosts, selectedDistro])
+  }, [data?.hosts, selectedDistro])
   
   // Get unique minor versions for selected distribution and major version
   const minorVersions = useMemo(() => {
+    const allHosts = data?.hosts ?? []
     if (selectedDistro === 'all' || selectedMajorVersion === 'all') return []
     const versions = new Set<string>()
     allHosts.forEach(host => {
@@ -79,7 +80,7 @@ export default function Hosts() {
       }
       return b.localeCompare(a)
     })
-  }, [allHosts, selectedDistro, selectedMajorVersion])
+  }, [data?.hosts, selectedDistro, selectedMajorVersion])
   
   // Reset version filters when distribution changes
   const handleDistroChange = (value: string) => {
@@ -96,6 +97,7 @@ export default function Hosts() {
   
   // Filter hosts by selected criteria
   const hosts = useMemo(() => {
+    const allHosts = data?.hosts ?? []
     let filtered = allHosts
     
     if (selectedDistro !== 'all') {
@@ -111,7 +113,7 @@ export default function Hosts() {
     }
     
     return filtered
-  }, [allHosts, selectedDistro, selectedMajorVersion, selectedMinorVersion])
+  }, [data?.hosts, selectedDistro, selectedMajorVersion, selectedMinorVersion])
   
   // Handle delete button click
   const handleDeleteClick = (e: React.MouseEvent, host: HostSummary) => {

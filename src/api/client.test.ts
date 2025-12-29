@@ -19,8 +19,8 @@ import { createMockHostsResponse, createMockReport, createMockHealthResponse } f
 const mockLocation = {
   href: '',
 }
-delete (window as any).location
-window.location = mockLocation as any
+delete (window as { location?: Location }).location
+window.location = mockLocation as Location
 
 // For this test file only, we use absolute URLs in handlers because Node.js fetch requires them
 // Other tests can continue using relative URLs because they work differently

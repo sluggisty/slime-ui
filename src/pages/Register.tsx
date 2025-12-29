@@ -48,7 +48,7 @@ export default function Register() {
         
         // Redirect to dashboard
         navigate('/')
-      } catch (loginErr) {
+      } catch {
         // Registration succeeded but auto-login failed - redirect to login page
         navigate('/login', { state: { message: 'Registration successful! Please sign in.' } })
       }

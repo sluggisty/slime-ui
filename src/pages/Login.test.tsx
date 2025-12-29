@@ -20,7 +20,7 @@ vi.mock('react-router-dom', async () => {
 })
 
 // Helper to render with MemoryRouter for tests that need location state
-const renderWithRouter = (ui: React.ReactElement, initialEntries: any[] = ['/login']) => {
+const renderWithRouter = (ui: React.ReactElement, initialEntries: string[] = ['/login']) => {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: { retry: false },

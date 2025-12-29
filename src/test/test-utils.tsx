@@ -19,6 +19,7 @@ export function createTestQueryClient() {
 }
 
 // Custom render function with providers
+// eslint-disable-next-line react-refresh/only-export-components
 function AllTheProviders({ children }: { children: React.ReactNode }) {
   const queryClient = createTestQueryClient()
 
@@ -37,6 +38,7 @@ const customRender = (
 ) => render(ui, { wrapper: AllTheProviders, ...options })
 
 // Re-export everything
+// eslint-disable-next-line react-refresh/only-export-components
 export * from '@testing-library/react'
 export { customRender as render }
 

@@ -11,6 +11,7 @@ import { api } from '../api/client'
 import { Card } from '../components/Card'
 import { Badge } from '../components/Table'
 import { Modal } from '../components/Modal'
+import type { ReportData } from '../types'
 import styles from './HostDetail.module.css'
 
 function DataItem({ label, value }: { label: string; value: string | number | undefined }) {
@@ -90,12 +91,12 @@ export default function HostDetail() {
   const { meta, data, errors } = report
   
   // Parse JSON data
-  let parsedData: any = {}
+  let parsedData: ReportData = {}
   try {
     if (typeof data === 'string') {
-      parsedData = JSON.parse(data)
+      parsedData = JSON.parse(data) as ReportData
     } else {
-      parsedData = data
+      parsedData = data as ReportData
     }
   } catch (e) {
     console.error('Failed to parse data:', e)
@@ -203,7 +204,7 @@ export default function HostDetail() {
         {network && network.interfaces && network.interfaces.length > 0 && (
           <CollapsibleSection title="Network" icon={<Network size={18} />}>
             <div className={styles.interfacesList}>
-              {network.interfaces.map((iface: any, i: number) => (
+              {network.interfaces.map((iface, i) => (
                 <div key={i} className={styles.interface}>
                   <div className={styles.interfaceHeader}>
                     <span className={styles.interfaceName}>{iface.name}</span>
@@ -214,7 +215,7 @@ export default function HostDetail() {
                   {iface.mac && <DataItem label="MAC" value={iface.mac} />}
                   {iface.addresses && iface.addresses.length > 0 && (
                     <div className={styles.addresses}>
-                      {iface.addresses.map((addr: any, j: number) => (
+                      {iface.addresses.map((addr, j) => (
                         <DataItem key={j} label={addr.type} value={addr.address} />
                       ))}
                     </div>
@@ -253,7 +254,7 @@ export default function HostDetail() {
               <div>
                 <h4>Running Services ({services.running_services.length})</h4>
                 <ul className={styles.serviceList}>
-                  {services.running_services.slice(0, 20).map((svc: any, i: number) => (
+                  {services.running_services.slice(0, 20).map((svc, i) => (
                     <li key={i}>{svc.name}</li>
                   ))}
                 </ul>
@@ -263,7 +264,7 @@ export default function HostDetail() {
               <div className={styles.failedServices}>
                 <h4>Failed Units ({services.failed_units.length})</h4>
                 <ul className={styles.serviceList}>
-                  {services.failed_units.map((unit: any, i: number) => (
+                  {services.failed_units.map((unit, i) => (
                     <li key={i} className={styles.failed}>{unit.name}</li>
                   ))}
                 </ul>
@@ -276,7 +277,7 @@ export default function HostDetail() {
         {filesystem && filesystem.mounts && filesystem.mounts.length > 0 && (
           <CollapsibleSection title="Filesystem" icon={<HardDrive size={18} />}>
             <div className={styles.mountsList}>
-              {filesystem.mounts.map((mount: any, i: number) => (
+              {filesystem.mounts.map((mount, i) => (
                 <div key={i} className={styles.mount}>
                   <div className={styles.mountHeader}>
                     <span className={styles.mountDevice}>{mount.device}</span>

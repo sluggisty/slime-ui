@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, beforeAll, afterAll, vi } from 'vitest'
+import { describe, it, expect, beforeEach, beforeAll, afterAll } from 'vitest'
 import { authApi, auth } from './auth'
 import { server } from '../test/server'
 import { http, HttpResponse } from 'msw'
@@ -29,7 +29,7 @@ describe('Auth API', () => {
         password: 'testpass123',
       }
 
-      let capturedBody: any = null
+      let capturedBody: { username: string; password: string } | null = null
       server.use(
         http.post(`${BASE_URL}/api/v1/auth/login`, async ({ request }) => {
           capturedBody = await request.json()
@@ -72,7 +72,7 @@ describe('Auth API', () => {
         org_name: 'Test Org',
       }
 
-      let capturedBody: any = null
+      let capturedBody: { username: string; password: string } | null = null
       server.use(
         http.post(`${BASE_URL}/api/v1/auth/register`, async ({ request }) => {
           capturedBody = await request.json()

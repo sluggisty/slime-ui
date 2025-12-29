@@ -4,7 +4,7 @@ import { Modal } from './Modal'
 
 describe('Modal', () => {
   it('does not render when isOpen is false', () => {
-    const { container } = render(
+    render(
       <Modal isOpen={false} onClose={vi.fn()} title="Test Modal">
         <div>Modal Content</div>
       </Modal>
@@ -67,7 +67,7 @@ describe('Modal', () => {
 
   it('does not call onClose when modal content is clicked', () => {
     const handleClose = vi.fn()
-    const { container } = render(
+    render(
       <Modal isOpen={true} onClose={handleClose} title="Test Modal">
         <div>Content</div>
       </Modal>

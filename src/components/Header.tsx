@@ -15,7 +15,7 @@ export default function Header() {
   const queryClient = useQueryClient()
   
   // Fetch current user information
-  const { data: user, isLoading: userLoading } = useQuery({
+  const { data: user } = useQuery({
     queryKey: ['currentUser'],
     queryFn: authApi.getMe,
     retry: false,

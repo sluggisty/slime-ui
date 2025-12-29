@@ -3,7 +3,7 @@ import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { render } from '../test/test-utils'
 import Register from './Register'
-import { auth, authApi } from '../api/auth'
+import { auth } from '../api/auth'
 import { server } from '../test/server'
 import { http, HttpResponse } from 'msw'
 
