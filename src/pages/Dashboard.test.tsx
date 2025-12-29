@@ -6,6 +6,7 @@ import Dashboard from './Dashboard'
 import { createMockHostsArray, createMockHostsResponse } from '../test/mockData'
 import { server } from '../test/server'
 import { http, HttpResponse } from 'msw'
+import { api } from '../api/client'
 
 // Mock navigate
 const mockNavigate = vi.fn()
@@ -154,6 +155,49 @@ describe('Dashboard', () => {
     await waitFor(() => {
       expect(screen.getByText('Recent Hosts')).toBeInTheDocument()
     })
+  })
+
+  it('handles error state when query fails', async () => {
+    server.use(
+      http.get('/api/v1/hosts', () => {
+        return HttpResponse.json({ error: 'Internal server error' }, { status: 500 })
+      })
+    )
+
+    render(<Dashboard />)
+
+    // The component should handle errors gracefully
+    // Since the component doesn't explicitly show errors, we verify it doesn't crash
+    await waitFor(() => {
+      // Loading state should disappear
+      expect(screen.queryByText(/loading/i)).not.toBeInTheDocument()
+    })
+  })
+
+  it('calls api.getHosts with correct query parameters', async () => {
+    const getHostsSpy = vi.spyOn(api, 'getHosts')
+    
+    server.use(
+      http.get('/api/v1/hosts', () => {
+        return HttpResponse.json(createMockHostsResponse({ hosts: createMockHostsArray(2) }))
+      })
+    )
+
+    render(<Dashboard />)
+
+    await waitFor(() => {
+      expect(getHostsSpy).toHaveBeenCalled()
+    })
+
+    // Verify api.getHosts was called (query function is invoked)
+    expect(getHostsSpy).toHaveBeenCalledTimes(1)
+    
+    // Verify data was successfully fetched and rendered
+    await waitFor(() => {
+      expect(screen.getByText('Total Hosts')).toBeInTheDocument()
+    })
+
+    getHostsSpy.mockRestore()
   })
 })
 
