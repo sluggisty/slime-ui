@@ -109,14 +109,14 @@ describe('API Client', () => {
     })
 
     it('preserves custom headers', async () => {
-      auth.setApiKey('test-key')
+      auth.setApiKey('test-api-key-123')
       
       server.use(
         http.get(`${BASE_URL}/api/v1/health`, async ({ request }) => {
           const customHeader = request.headers.get('Custom-Header')
           expect(customHeader).toBe('custom-value')
           const apiKey = request.headers.get('X-API-Key')
-          expect(apiKey).toBe('test-key')
+          expect(apiKey).toBe('test-api-key-123')
           return HttpResponse.json(createMockHealthResponse())
         })
       )
