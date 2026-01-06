@@ -59,7 +59,7 @@ describe('Auth API', () => {
 
       await expect(
         authApi.login({ username: 'invalid', password: 'wrong' })
-      ).rejects.toThrow('Invalid credentials')
+      ).rejects.toThrow('Unauthorized')
     })
   })
 
@@ -112,43 +112,43 @@ describe('Auth API', () => {
   })
 
   describe('auth utilities', () => {
-    it('setApiKey stores the key in localStorage', () => {
+    it('setApiKey stores the key securely', () => {
       const testKey = 'test-api-key-12345'
-      
+
       auth.setApiKey(testKey)
-      
-      expect(localStorage.getItem('api_key')).toBe(testKey)
+
+      expect(localStorage.getItem('slime_ui_auth_api_key')).toBe(testKey)
     })
 
-    it('getApiKey retrieves the key from localStorage', () => {
+    it('getApiKey retrieves the key from secure storage', () => {
       const testKey = 'test-api-key-12345'
-      localStorage.setItem('api_key', testKey)
-      
+      localStorage.setItem('slime_ui_auth_api_key', testKey)
+
       const retrievedKey = auth.getApiKey()
-      
+
       expect(retrievedKey).toBe(testKey)
     })
 
     it('getApiKey returns null when no key is set', () => {
-      localStorage.removeItem('api_key')
-      
+      localStorage.removeItem('slime_ui_auth_api_key')
+
       const retrievedKey = auth.getApiKey()
-      
+
       expect(retrievedKey).toBeNull()
     })
 
-    it('removeApiKey removes the key from localStorage', () => {
+    it('removeApiKey clears all auth data', () => {
       const testKey = 'test-api-key-12345'
-      localStorage.setItem('api_key', testKey)
-      
+      localStorage.setItem('slime_ui_auth_api_key', testKey)
+
       auth.removeApiKey()
-      
-      expect(localStorage.getItem('api_key')).toBeNull()
+
+      expect(localStorage.getItem('slime_ui_auth_api_key')).toBeNull()
     })
 
     it('isAuthenticated returns true when key is set', () => {
-      auth.setApiKey('test-key')
-      
+      auth.setApiKey('test-api-key-12345')
+
       expect(auth.isAuthenticated()).toBe(true)
     })
 

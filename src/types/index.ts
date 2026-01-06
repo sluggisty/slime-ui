@@ -197,6 +197,7 @@ export interface RegisterRequest {
 export interface LoginResponse {
   user: User
   token: string // API key
+  csrf_token?: string // CSRF token for enhanced security
 }
 
 export interface APIKey {
