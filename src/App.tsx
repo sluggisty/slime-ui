@@ -3,7 +3,8 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
-import { errorLogger } from './utils/errorLogger'
+import { ErrorProvider, ErrorNotifications } from './contexts/ErrorContext'
+import { errorHandler } from './utils/errorHandler'
 import Dashboard from './pages/Dashboard'
 import Hosts from './pages/Hosts'
 import HostDetail from './pages/HostDetail'
@@ -13,26 +14,40 @@ import Register from './pages/Register'
 import { auth } from './api/auth'
 
 function App() {
+  // Initialize global error handler
+  React.useEffect(() => {
+    errorHandler.initialize()
+    return () => errorHandler.destroy()
+  }, [])
+
   // Global error handler
   const handleGlobalError = async (error: Error, errorInfo: React.ErrorInfo, context?: any) => {
-    // Log error and send report
-    await errorLogger.reportError(error, errorInfo, context)
+    // Use the centralized error handler
+    await errorHandler.handleError(error, {
+      componentStack: errorInfo?.componentStack,
+      ...context
+    }, 'react')
   }
 
   // Route-level error handler
   const handleRouteError = async (error: Error, errorInfo: React.ErrorInfo, context?: any) => {
-    // Log route-specific errors
-    await errorLogger.reportError(error, errorInfo, context)
+    // Use the centralized error handler
+    await errorHandler.handleError(error, {
+      componentStack: errorInfo?.componentStack,
+      ...context
+    }, 'react')
   }
 
   return (
-    <ErrorBoundary
-      level="global"
-      onError={handleGlobalError}
-      enableRetry={true}
-      maxRetries={3}
-      fallback={undefined} // Use default ErrorFallback
-    >
+    <ErrorProvider>
+      <ErrorNotifications />
+      <ErrorBoundary
+        level="global"
+        onError={handleGlobalError}
+        enableRetry={true}
+        maxRetries={3}
+        fallback={undefined} // Use default ErrorFallback
+      >
       <Routes>
         {/* Auth routes - separate error boundary for auth flow */}
         <Route path="/login" element={
@@ -115,6 +130,7 @@ function App() {
         </Route>
       </Routes>
     </ErrorBoundary>
+    </ErrorProvider>
   )
 }
 
