@@ -51,8 +51,8 @@ describe('Register', () => {
     
     await user.type(screen.getByLabelText(/username/i), 'testuser')
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
-    await user.type(screen.getByLabelText(/^password$/i), 'password123')
-    await user.type(screen.getByLabelText(/confirm password/i), 'password123')
+    await user.type(screen.getByLabelText(/^password$/i), 'StrongP@ss123')
+    await user.type(screen.getByLabelText(/confirm password/i), 'StrongP@ss123')
     await user.type(screen.getByLabelText(/organization name/i), 'Test Org')
     
     const submitButton = screen.getByRole('button', { name: /create account/i })
@@ -65,7 +65,7 @@ describe('Register', () => {
     
     await user.type(screen.getByLabelText(/username/i), 'testuser')
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
-    await user.type(screen.getByLabelText(/^password$/i), 'password123')
+    await user.type(screen.getByLabelText(/^password$/i), 'StrongP@ss123')
     await user.type(screen.getByLabelText(/confirm password/i), 'password456')
     await user.type(screen.getByLabelText(/organization name/i), 'Test Org')
     
@@ -94,21 +94,40 @@ describe('Register', () => {
   })
 
   it('handles successful registration and auto-login', async () => {
+    server.use(
+      http.post('/api/v1/auth/register', () => {
+        return HttpResponse.json({ id: '1', username: 'testuser', email: 'test@example.com' }, { status: 201 })
+      }),
+      http.post('/api/v1/auth/login', () => {
+        return HttpResponse.json({
+          token_info: {
+            token: 'test-api-key-123',
+            expires_at: new Date(Date.now() + 3600000).toISOString(),
+            refresh_token: 'test-refresh-token',
+            refresh_expires_at: new Date(Date.now() + 604800000).toISOString(),
+            issued_at: new Date().toISOString(),
+            token_type: 'Bearer'
+          },
+          user: { id: '1', username: 'testuser', email: 'test@example.com' }
+        }, { status: 200 })
+      })
+    )
+
     const user = userEvent.setup()
     render(<Register />)
 
     await user.type(screen.getByLabelText(/username/i), 'testuser')
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
-    await user.type(screen.getByLabelText(/^password$/i), 'password123')
-    await user.type(screen.getByLabelText(/confirm password/i), 'password123')
+    await user.type(screen.getByLabelText(/^password$/i), 'StrongP@ss123')
+    await user.type(screen.getByLabelText(/confirm password/i), 'StrongP@ss123')
     await user.type(screen.getByLabelText(/organization name/i), 'Test Org')
-    
+
     await user.click(screen.getByRole('button', { name: /create account/i }))
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/')
     })
-    expect(auth.getApiKey()).toBeTruthy()
+    expect(auth.getApiKeySync()).toBeTruthy()
   })
 
   it('shows error on failed registration', async () => {
@@ -123,8 +142,8 @@ describe('Register', () => {
 
     await user.type(screen.getByLabelText(/username/i), 'existinguser')
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
-    await user.type(screen.getByLabelText(/^password$/i), 'password123')
-    await user.type(screen.getByLabelText(/confirm password/i), 'password123')
+    await user.type(screen.getByLabelText(/^password$/i), 'StrongP@ss123')
+    await user.type(screen.getByLabelText(/confirm password/i), 'StrongP@ss123')
     await user.type(screen.getByLabelText(/organization name/i), 'Test Org')
     
     await user.click(screen.getByRole('button', { name: /create account/i }))
@@ -151,8 +170,8 @@ describe('Register', () => {
 
     await user.type(screen.getByLabelText(/username/i), 'testuser')
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
-    await user.type(screen.getByLabelText(/^password$/i), 'password123')
-    await user.type(screen.getByLabelText(/confirm password/i), 'password123')
+    await user.type(screen.getByLabelText(/^password$/i), 'StrongP@ss123')
+    await user.type(screen.getByLabelText(/confirm password/i), 'StrongP@ss123')
     await user.type(screen.getByLabelText(/organization name/i), 'Test Org')
     
     await user.click(screen.getByRole('button', { name: /create account/i }))
@@ -179,8 +198,8 @@ describe('Register', () => {
 
     await user.type(screen.getByLabelText(/username/i), 'testuser')
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
-    await user.type(screen.getByLabelText(/^password$/i), 'password123')
-    await user.type(screen.getByLabelText(/confirm password/i), 'password123')
+    await user.type(screen.getByLabelText(/^password$/i), 'StrongP@ss123')
+    await user.type(screen.getByLabelText(/confirm password/i), 'StrongP@ss123')
     await user.type(screen.getByLabelText(/organization name/i), 'Test Org')
     
     await user.click(screen.getByRole('button', { name: /create account/i }))

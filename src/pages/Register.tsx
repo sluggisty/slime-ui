@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { UserPlus, User, Mail, Lock, AlertCircle, CheckCircle, Building2 } from 'lucide-react'
 import { authApi, auth } from '../api/auth'
+import { validateRegistrationData, getSafeErrorMessage } from '../utils/validation'
 import type { RegisterRequest } from '../types'
 import styles from './Register.module.css'
 
@@ -21,31 +22,42 @@ export default function Register() {
     setError('')
     setSuccess(false)
 
-    // Validation
-    if (password !== confirmPassword) {
-      setError('Passwords do not match')
+    // Validate form data
+    const validation = validateRegistrationData({
+      username,
+      email,
+      password,
+      org_name: orgName
+    })
+
+    if (!validation.isValid) {
+      setError(validation.errors.join(', '))
       return
     }
 
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters long')
+    // Additional validation for password confirmation
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
       return
     }
 
     setLoading(true)
 
     try {
-      const request: RegisterRequest = { username, email, password, org_name: orgName }
+      const request: RegisterRequest = validation.sanitizedValue
       await authApi.register(request)
-      
+
       // Registration successful - automatically log in
       setSuccess(true)
-      
+
       // Try to log in with the new credentials
       try {
-        const loginResponse = await authApi.login({ username, password })
-        auth.setApiKey(loginResponse.token)
-        
+        const loginResponse = await authApi.login({
+          username: validation.sanitizedValue.username,
+          password: validation.sanitizedValue.password
+        })
+        auth.setApiKey(loginResponse.token_info.token)
+
         // Redirect to dashboard
         navigate('/')
       } catch {
@@ -53,7 +65,7 @@ export default function Register() {
         navigate('/login', { state: { message: 'Registration successful! Please sign in.' } })
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed')
+      setError(getSafeErrorMessage(err))
     } finally {
       setLoading(false)
     }

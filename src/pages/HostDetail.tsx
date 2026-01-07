@@ -11,6 +11,7 @@ import { api } from '../api/client'
 import { Card } from '../components/Card'
 import { Badge } from '../components/Table'
 import { Modal } from '../components/Modal'
+import { SafeValue, TruncatedText } from '../components/SafeText'
 import type { ReportData } from '../types'
 import styles from './HostDetail.module.css'
 
@@ -19,7 +20,7 @@ function DataItem({ label, value }: { label: string; value: string | number | un
   return (
     <div className={styles.dataItem}>
       <span className={styles.dataLabel}>{label}</span>
-      <span className={styles.dataValue}>{String(value)}</span>
+      <SafeValue value={value} className={styles.dataValue} />
     </div>
   )
 }
@@ -122,7 +123,7 @@ export default function HostDetail() {
           <Server size={28} />
         </div>
         <div className={styles.headerInfo}>
-          <h1>{meta.hostname}</h1>
+          <h1><SafeValue value={meta.hostname} /></h1>
           <div className={styles.headerMeta}>
             <Badge variant={errors?.length ? 'warning' : 'success'}>
               {errors?.length ? `${errors.length} Errors` : 'OK'}
@@ -341,7 +342,7 @@ export default function HostDetail() {
         }
       >
         <p>
-          Are you sure you want to delete <strong>{meta.hostname}</strong>?
+          Are you sure you want to delete <strong><SafeValue value={meta.hostname} /></strong>?
         </p>
         <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginTop: 'var(--space-sm)' }}>
           This action cannot be undone. All data for this host will be permanently removed.
