@@ -1,19 +1,26 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
 import { ErrorProvider, ErrorNotifications } from './contexts/ErrorContext'
+import { PageLoading } from './components/Loading'
 import { errorHandler } from './utils/errorHandler'
 import { logger } from './utils/logger'
 import { healthMonitor } from './utils/healthCheck'
-import Dashboard from './pages/Dashboard'
-import Hosts from './pages/Hosts'
-import HostDetail from './pages/HostDetail'
-import UserAccess from './pages/UserAccess'
-import Login from './pages/Login'
-import Register from './pages/Register'
 import { auth } from './api/auth'
+
+// Lazy load page components for code splitting
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Hosts = lazy(() => import('./pages/Hosts'))
+const HostDetail = lazy(() => import('./pages/HostDetail'))
+const UserAccess = lazy(() => import('./pages/UserAccess'))
+const Login = lazy(() => import('./pages/Login'))
+const Register = lazy(() => import('./pages/Register'))
+
+// Lazy load heavy components that might be used conditionally
+export const HealthDashboard = lazy(() => import('./components/HealthDashboard'))
+export const ErrorExample = lazy(() => import('./components/ErrorExample'))
 
 function App() {
   // Initialize global error handler, logger, and health monitor
@@ -57,24 +64,29 @@ function App() {
         maxRetries={3}
         fallback={undefined} // Use default ErrorFallback
       >
-      <Routes>
+        <Suspense fallback={<PageLoading message="Loading application..." />}>
+          <Routes>
         {/* Auth routes - separate error boundary for auth flow */}
         <Route path="/login" element={
-        <ErrorBoundary
-          level="route"
-          onError={handleRouteError}
-          context={{ route: '/login', timestamp: Date.now() }}
-        >
-            {auth.isAuthenticated() ? <Navigate to="/" replace /> : <Login />}
+          <ErrorBoundary
+            level="route"
+            onError={handleRouteError}
+            context={{ route: '/login', timestamp: Date.now() }}
+          >
+            <Suspense fallback={<PageLoading message="Loading login..." />}>
+              {auth.isAuthenticated() ? <Navigate to="/" replace /> : <Login />}
+            </Suspense>
           </ErrorBoundary>
         } />
         <Route path="/register" element={
-        <ErrorBoundary
-          level="route"
-          onError={handleRouteError}
-          context={{ route: '/register', timestamp: Date.now() }}
-        >
-            {auth.isAuthenticated() ? <Navigate to="/" replace /> : <Register />}
+          <ErrorBoundary
+            level="route"
+            onError={handleRouteError}
+            context={{ route: '/register', timestamp: Date.now() }}
+          >
+            <Suspense fallback={<PageLoading message="Loading registration..." />}>
+              {auth.isAuthenticated() ? <Navigate to="/" replace /> : <Register />}
+            </Suspense>
           </ErrorBoundary>
         } />
 
@@ -95,9 +107,11 @@ function App() {
               context={{ route: 'dashboard', timestamp: Date.now() }}
               enableRetry={true}
             >
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
+              <Suspense fallback={<PageLoading message="Loading dashboard..." />}>
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              </Suspense>
             </ErrorBoundary>
           } />
           <Route path="hosts" element={
@@ -107,9 +121,11 @@ function App() {
               context={{ route: 'hosts', timestamp: Date.now() }}
               enableRetry={true}
             >
-              <ProtectedRoute>
-                <Hosts />
-              </ProtectedRoute>
+              <Suspense fallback={<PageLoading message="Loading hosts..." />}>
+                <ProtectedRoute>
+                  <Hosts />
+                </ProtectedRoute>
+              </Suspense>
             </ErrorBoundary>
           } />
           <Route path="hosts/:host_id" element={
@@ -119,9 +135,11 @@ function App() {
               context={{ route: 'host-detail', timestamp: Date.now() }}
               enableRetry={true}
             >
-              <ProtectedRoute>
-                <HostDetail />
-              </ProtectedRoute>
+              <Suspense fallback={<PageLoading message="Loading host details..." />}>
+                <ProtectedRoute>
+                  <HostDetail />
+                </ProtectedRoute>
+              </Suspense>
             </ErrorBoundary>
           } />
           <Route path="users" element={
@@ -131,13 +149,16 @@ function App() {
               context={{ route: 'users', timestamp: Date.now() }}
               enableRetry={true}
             >
-              <ProtectedRoute>
-                <UserAccess />
-              </ProtectedRoute>
+              <Suspense fallback={<PageLoading message="Loading user access..." />}>
+                <ProtectedRoute>
+                  <UserAccess />
+                </ProtectedRoute>
+              </Suspense>
             </ErrorBoundary>
           } />
         </Route>
       </Routes>
+        </Suspense>
     </ErrorBoundary>
     </ErrorProvider>
   )
