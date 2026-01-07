@@ -1,0 +1,328 @@
+/* Error Fallback Component Styles */
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 2rem;
+  background-color: var(--color-background, #f8f9fa);
+}
+
+.errorCard {
+  max-width: 600px;
+  width: 100%;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  text-align: center;
+  border: 1px solid var(--color-border, #e1e5e9);
+}
+
+.iconContainer {
+  margin-bottom: 1.5rem;
+}
+
+.errorIcon {
+  color: var(--color-error, #dc3545);
+}
+
+.content {
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--color-text, #1a202c);
+  margin: 0 0 0.5rem 0;
+}
+
+.message {
+  font-size: 1rem;
+  color: var(--color-text-secondary, #64748b);
+  line-height: 1.5;
+  margin: 0 0 1.5rem 0;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.retryButton,
+.resetButton,
+.secondaryButton,
+.reportButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.retryButton {
+  background-color: var(--color-primary, #007bff);
+  color: white;
+  border-color: var(--color-primary, #007bff);
+}
+
+.retryButton:hover {
+  background-color: var(--color-primary-hover, #0056b3);
+  border-color: var(--color-primary-hover, #0056b3);
+}
+
+.resetButton {
+  background-color: var(--color-warning, #ffc107);
+  color: var(--color-text, #1a202c);
+  border-color: var(--color-warning, #ffc107);
+}
+
+.resetButton:hover {
+  background-color: var(--color-warning-hover, #e0a800);
+  border-color: var(--color-warning-hover, #e0a800);
+}
+
+.secondaryButton {
+  background-color: transparent;
+  color: var(--color-text-secondary, #64748b);
+  border-color: var(--color-border, #e1e5e9);
+}
+
+.secondaryButton:hover {
+  background-color: var(--color-background-hover, #f1f5f9);
+  border-color: var(--color-border-hover, #cbd5e1);
+}
+
+.reportButton {
+  background-color: var(--color-error, #dc3545);
+  color: white;
+  border-color: var(--color-error, #dc3545);
+}
+
+.reportButton:hover {
+  background-color: var(--color-error-hover, #c82333);
+  border-color: var(--color-error-hover, #c82333);
+}
+
+.details {
+  margin-top: 1.5rem;
+  text-align: left;
+}
+
+.detailsSummary {
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary, #64748b);
+  margin-bottom: 0.5rem;
+  padding: 0.5rem;
+  background-color: var(--color-background-light, #f8f9fa);
+  border-radius: 4px;
+  border: 1px solid var(--color-border, #e1e5e9);
+}
+
+.detailsSummary:hover {
+  background-color: var(--color-background-hover, #f1f5f9);
+}
+
+.errorDetails {
+  background-color: var(--color-background-light, #f8f9fa);
+  border: 1px solid var(--color-border, #e1e5e9);
+  border-radius: 4px;
+  padding: 1rem;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.detailSection {
+  margin-bottom: 1rem;
+}
+
+.detailSection:last-child {
+  margin-bottom: 0;
+}
+
+.detailSection h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text, #1a202c);
+  margin: 0 0 0.5rem 0;
+  font-family: inherit;
+}
+
+.errorText,
+.stackTrace,
+.componentStack,
+.context {
+  background-color: var(--color-error-light, #fef2f2);
+  border: 1px solid var(--color-error-border, #fecaca);
+  border-radius: 4px;
+  padding: 0.5rem;
+  color: var(--color-error-dark, #991b1b);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.footer {
+  border-top: 1px solid var(--color-border, #e1e5e9);
+  padding-top: 1rem;
+}
+
+.footerText {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #64748b);
+  margin: 0 0 0.5rem 0;
+}
+
+.sessionId {
+  font-size: 0.75rem;
+  color: var(--color-text-muted, #94a3b8);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  margin: 0;
+}
+
+/* Minimal Error Fallback */
+.minimalContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background-color: var(--color-background, #f8f9fa);
+  border-radius: 4px;
+  border: 1px solid var(--color-border, #e1e5e9);
+}
+
+.minimalContent {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-error, #dc3545);
+}
+
+.minimalIcon {
+  flex-shrink: 0;
+}
+
+.minimalContent p {
+  margin: 0;
+  font-size: 0.875rem;
+}
+
+.minimalRetry {
+  background: none;
+  border: 1px solid var(--color-error, #dc3545);
+  color: var(--color-error, #dc3545);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  margin-left: 0.5rem;
+}
+
+.minimalRetry:hover {
+  background-color: var(--color-error, #dc3545);
+  color: white;
+}
+
+/* Inline Error Fallback */
+.inlineContainer {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.inlineContent {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--color-error, #dc3545);
+  font-size: 0.875rem;
+  padding: 0.25rem 0.5rem;
+  background-color: var(--color-error-light, #fef2f2);
+  border: 1px solid var(--color-error-border, #fecaca);
+  border-radius: 4px;
+}
+
+.inlineIcon {
+  flex-shrink: 0;
+}
+
+.inlineText {
+  flex: 1;
+}
+
+.inlineRetry {
+  background: none;
+  border: 1px solid var(--color-error, #dc3545);
+  color: var(--color-error, #dc3545);
+  padding: 0.125rem 0.25rem;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  margin-left: 0.25rem;
+}
+
+.inlineRetry:hover {
+  background-color: var(--color-error, #dc3545);
+  color: white;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+    min-height: 300px;
+  }
+
+  .errorCard {
+    padding: 1.5rem;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .retryButton,
+  .resetButton,
+  .secondaryButton,
+  .reportButton {
+    justify-content: center;
+  }
+
+  .title {
+    font-size: 1.25rem;
+  }
+
+  .message {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .errorCard {
+    padding: 1rem;
+  }
+
+  .iconContainer {
+    margin-bottom: 1rem;
+  }
+
+  .title {
+    font-size: 1.125rem;
+  }
+}
