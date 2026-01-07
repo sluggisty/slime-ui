@@ -5,6 +5,7 @@ import type {
 } from '../types'
 import { config } from '../config/config'
 import { auth } from './auth'
+import { errorHandler } from '../utils/errorHandler'
 
 // ============================================================================
 // TYPES AND INTERFACES
@@ -719,7 +720,17 @@ export async function fetchApi<T>(
   }
 
   // This should never be reached, but just in case
-  throw lastError || createApiError('Request failed after all retry attempts')
+  const finalError = lastError || createApiError('Request failed after all retry attempts')
+
+  // Report the error using the global error handler
+  await errorHandler.handleNetworkError(
+    finalError,
+    endpoint,
+    fetchOptions.method || 'GET',
+    (finalError as any).status
+  )
+
+  throw finalError
 }
 
 // ============================================================================
