@@ -1,5 +1,27 @@
 import { defineConfig, Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+import { visualizer } from 'rollup-plugin-visualizer'
+
+// Compression Plugin for production builds
+function compressionPlugin(): Plugin {
+  return {
+    name: 'compression-plugin',
+    generateBundle(options, bundle) {
+      // This plugin would typically compress assets during build
+      // For Vite, compression is usually handled by the server
+      // But we can add compression hints to HTML
+      Object.keys(bundle).forEach((fileName) => {
+        const chunk = bundle[fileName]
+        if (chunk.type === 'asset' && fileName.endsWith('.html')) {
+          // Add preload hints for critical resources
+          const html = chunk.source as string
+          const modifiedHtml = addPreloadHints(html)
+          chunk.source = modifiedHtml
+        }
+      })
+    }
+  }
+}
 
 // CSP Plugin for production builds
 function cspPlugin(): Plugin {
@@ -48,177 +70,26 @@ function cspPlugin(): Plugin {
   }
 }
 
+// Add preload hints for critical resources
+function addPreloadHints(html: string): string {
+  // Add preload hints for critical CSS and JS
+  const preloadHints = `
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/assets/react-core-[hash].js" as="script" crossorigin>
+    <link rel="preload" href="/assets/app-[hash].js" as="script" crossorigin>
+    <link rel="preload" href="/assets/main-[hash].css" as="style">
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+  `
+
+  return html.replace(
+    '<title>',
+    `${preloadHints}\n    <title>`
+  )
+}
+
 export default defineConfig({
   plugins: [
     react(),
-    cspPlugin()
+    cspPlugin(),
+    compressionPlugin()
   ],
-  server: {
-    port: 3000,
-    proxy: {
-      '/api': {
-        target: process.env.VITE_API_BASE_URL || 'http://localhost:8080',
-        changeOrigin: true,
-      },
-    },
-  },
-  build: {
-    // Optimize chunk splitting for better caching and loading
-    rollupOptions: {
-      output: {
-        // Ensure consistent chunk naming for CSP
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]',
-
-        // Optimize chunk splitting
-        manualChunks: (id) => {
-          // Vendor chunk for React and core libraries
-          if (id.includes('node_modules')) {
-            // React ecosystem in one chunk
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'react-vendor'
-            }
-
-            // UI libraries
-            if (id.includes('lucide-react') || id.includes('@radix-ui') || id.includes('framer-motion')) {
-              return 'ui-vendor'
-            }
-
-            // Utility libraries
-            if (id.includes('lodash') || id.includes('date-fns') || id.includes('clsx')) {
-              return 'utils-vendor'
-            }
-
-            // HTTP and API libraries
-            if (id.includes('axios') || id.includes('ky') || id.includes('@tanstack/react-query')) {
-              return 'api-vendor'
-            }
-
-            // Other node_modules in a catch-all vendor chunk
-            return 'vendor'
-          }
-
-          // Feature-based code splitting for pages
-          if (id.includes('/pages/')) {
-            // Group related pages
-            if (id.includes('/pages/Dashboard') || id.includes('/pages/Hosts') || id.includes('/pages/HostDetail')) {
-              return 'monitoring-pages'
-            }
-
-            if (id.includes('/pages/Login') || id.includes('/pages/Register')) {
-              return 'auth-pages'
-            }
-
-            if (id.includes('/pages/UserAccess')) {
-              return 'admin-pages'
-            }
-          }
-
-          // Component chunks for heavy components
-          if (id.includes('/components/HealthDashboard') ||
-              id.includes('/components/ErrorExample')) {
-            return 'heavy-components'
-          }
-
-          // Utility chunks
-          if (id.includes('/utils/') && (
-            id.includes('errorHandler') ||
-            id.includes('errorLogger') ||
-            id.includes('healthCheck')
-          )) {
-            return 'error-monitoring'
-          }
-
-          if (id.includes('/utils/') && (
-            id.includes('validation') ||
-            id.includes('bundleAnalysis')
-          )) {
-            return 'validation-utils'
-          }
-        },
-
-        // Optimize chunk size limits
-        experimentalMinChunkSize: 1000, // 1KB minimum (very small for better splitting)
-
-        // Generate source maps for debugging (only in development)
-        sourcemap: process.env.NODE_ENV === 'development'
-      },
-
-      // External dependencies that shouldn't be bundled
-      external: process.env.NODE_ENV === 'production' ? [] : []
-    },
-
-    // Optimize bundle size
-    minify: 'esbuild',
-    sourcemap: process.env.NODE_ENV === 'development',
-
-    // Chunk size warnings
-    chunkSizeWarningLimit: 1000, // Warn for chunks > 1000KB
-
-    // CSS code splitting
-    cssCodeSplit: true,
-
-    // Asset optimization
-    assetsInlineLimit: 4096, // Inline assets < 4KB
-
-    // Target modern browsers for smaller bundles
-    target: 'esnext',
-
-    // Optimize dependencies
-    commonjsOptions: {
-      include: [/node_modules/]
-    }
-  },
-
-  // Optimize development server
-  server: {
-    port: 3000,
-    proxy: {
-      '/api': {
-        target: process.env.VITE_API_BASE_URL || 'http://localhost:8080',
-        changeOrigin: true,
-      },
-    },
-    // Enable HMR for better development experience
-    hmr: {
-      overlay: true
-    }
-  },
-
-  // Dependency pre-bundling optimizations
-  optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      'react-router-dom',
-      '@tanstack/react-query',
-      'lucide-react',
-      'date-fns'
-    ],
-    exclude: [
-      // Exclude large libraries that should be lazy loaded
-      'chart.js',
-      'd3',
-      'three.js'
-    ]
-  },
-
-  // Enable esbuild for faster builds
-  esbuild: {
-    // Remove console.log in production
-    drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
-
-    // Target modern JS for smaller bundles
-    target: 'es2020',
-
-    // Minify identifiers in production
-    minifyIdentifiers: process.env.NODE_ENV === 'production',
-
-    // Remove whitespace in production
-    minifyWhitespace: process.env.NODE_ENV === 'production'
-  }
-})
-
-
-
