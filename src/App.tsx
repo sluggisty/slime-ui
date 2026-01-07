@@ -5,6 +5,8 @@ import ProtectedRoute from './components/ProtectedRoute'
 import ErrorBoundary from './components/ErrorBoundary'
 import { ErrorProvider, ErrorNotifications } from './contexts/ErrorContext'
 import { errorHandler } from './utils/errorHandler'
+import { logger } from './utils/logger'
+import { healthMonitor } from './utils/healthCheck'
 import Dashboard from './pages/Dashboard'
 import Hosts from './pages/Hosts'
 import HostDetail from './pages/HostDetail'
@@ -14,10 +16,17 @@ import Register from './pages/Register'
 import { auth } from './api/auth'
 
 function App() {
-  // Initialize global error handler
+  // Initialize global error handler, logger, and health monitor
   React.useEffect(() => {
     errorHandler.initialize()
-    return () => errorHandler.destroy()
+    logger.initialize()
+    healthMonitor.initialize()
+
+    return () => {
+      errorHandler.destroy()
+      logger.destroy()
+      healthMonitor.destroy()
+    }
   }, [])
 
   // Global error handler
