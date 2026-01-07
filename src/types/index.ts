@@ -194,10 +194,32 @@ export interface RegisterRequest {
   org_name: string
 }
 
+export interface TokenInfo {
+  token: string // API key
+  expires_at?: string // Token expiration timestamp
+  refresh_token?: string // Refresh token for extending session
+  refresh_expires_at?: string // Refresh token expiration
+  issued_at: string // When token was issued
+  token_type?: string // Usually "Bearer"
+}
+
 export interface LoginResponse {
   user: User
-  token: string // API key
-  csrf_token?: string // CSRF token for enhanced security
+  token_info: TokenInfo // Enhanced token information
+  // Note: CSRF token is session-based, available via meta tag or /auth/csrf-token endpoint
+}
+
+export interface RefreshTokenResponse {
+  token_info: TokenInfo
+  // Note: CSRF tokens are session-based, not refreshed with API tokens
+}
+
+export interface AuthSession {
+  user: User
+  token_info: TokenInfo
+  last_activity: string
+  session_id: string
+  expires_at: string // Session expiration
 }
 
 export interface APIKey {

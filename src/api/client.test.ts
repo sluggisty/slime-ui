@@ -84,7 +84,7 @@ describe('API Client', () => {
       )
 
       await expect(fetchApi('/health')).rejects.toThrow('Unauthorized')
-      expect(auth.getApiKey()).toBeNull()
+      expect(auth.getApiKeySync()).toBeNull()
       expect(window.location.href).toBe('/login')
     })
 

@@ -39,6 +39,298 @@ interface RateLimitState {
 const RATE_LIMIT_WINDOW = 60000 // 1 minute
 const MAX_REQUESTS_PER_WINDOW = 100 // Adjust based on backend limits
 
+// ============================================================================
+// SECURE STORAGE UTILITY
+// ============================================================================
+
+export class SecureStorage {
+  private readonly keyPrefix = 'slime_ui_'
+
+  set(key: string, value: string): void {
+    try {
+      localStorage.setItem(this.keyPrefix + key, value)
+    } catch (error) {
+      console.error('Failed to store data:', error)
+      throw new Error('Unable to store data')
+    }
+  }
+
+  get(key: string): string | null {
+    try {
+      return localStorage.getItem(this.keyPrefix + key)
+    } catch (error) {
+      console.error('Failed to retrieve data:', error)
+      return null
+    }
+  }
+
+  remove(key: string): void {
+    try {
+      localStorage.removeItem(this.keyPrefix + key)
+    } catch (error) {
+      console.error('Failed to remove data:', error)
+    }
+  }
+
+  clear(): void {
+    try {
+      const keys = Object.keys(localStorage).filter(key => key.startsWith(this.keyPrefix))
+      keys.forEach(key => localStorage.removeItem(key))
+    } catch (error) {
+      console.error('Failed to clear data:', error)
+    }
+  }
+}
+
+// ============================================================================
+// TOKEN MANAGER (Moved here to avoid circular dependencies)
+// ============================================================================
+
+interface TokenState {
+  token_info: TokenInfo | null
+  session: AuthSession | null
+  refreshPromise: Promise<TokenInfo> | null
+  isRefreshing: boolean
+}
+
+class TokenManager {
+  private state: TokenState = {
+    token_info: null,
+    session: null,
+    refreshPromise: null,
+    isRefreshing: false
+  }
+
+  private refreshTimer: NodeJS.Timeout | null = null
+  private activityTimer: NodeJS.Timeout | null = null
+  private sessionTimeoutTimer: NodeJS.Timeout | null = null
+
+  constructor() {
+    this.loadStoredTokens()
+    this.initializeSessionMonitoring()
+  }
+
+  // Basic token management methods needed by client
+  setTokenInfo(tokenInfo: TokenInfo): void {
+    this.state.token_info = tokenInfo
+
+    // Store encrypted token data
+    const encryptedData = this.encryptTokenData(tokenInfo)
+    secureStorage.set('token_info', encryptedData)
+
+    // Schedule automatic refresh
+    if (config.auth.enableAutoRefresh) {
+      this.scheduleTokenRefresh()
+    }
+  }
+
+  async refreshTokenIfNeeded(): Promise<TokenInfo | null> {
+    if (!this.state.token_info) return null
+    if (!this.shouldRefreshToken(this.state.token_info)) return this.state.token_info
+
+    // Prevent multiple concurrent refresh requests
+    if (this.state.isRefreshing && this.state.refreshPromise) {
+      return this.state.refreshPromise
+    }
+
+    this.state.isRefreshing = true
+    this.state.refreshPromise = this.performTokenRefresh()
+
+    try {
+      const newTokenInfo = await this.state.refreshPromise
+      this.setTokenInfo(newTokenInfo)
+      return newTokenInfo
+    } catch (error) {
+      console.error('[TokenManager] Token refresh failed:', error)
+      this.clearTokens()
+      throw error
+    } finally {
+      this.state.isRefreshing = false
+      this.state.refreshPromise = null
+    }
+  }
+
+  getApiKey(): string | null {
+    if (!this.state.token_info) return null
+
+    // Check if token is expired
+    if (this.isTokenExpired(this.state.token_info)) {
+      this.clearTokens()
+      return null
+    }
+
+    return this.state.token_info.token
+  }
+
+  clearTokens(): void {
+    this.state.token_info = null
+    this.state.session = null
+    this.state.refreshPromise = null
+    this.state.isRefreshing = false
+
+    // Clear timers
+    if (this.refreshTimer) clearTimeout(this.refreshTimer)
+    if (this.activityTimer) clearInterval(this.activityTimer)
+    if (this.sessionTimeoutTimer) clearInterval(this.sessionTimeoutTimer)
+
+    // Clear storage
+    secureStorage.remove('token_info')
+    secureStorage.remove('session')
+  }
+
+  private shouldRefreshToken(tokenInfo: TokenInfo): boolean {
+    if (!tokenInfo.expires_at) return false
+    const expiresAt = new Date(tokenInfo.expires_at).getTime()
+    return (expiresAt - Date.now()) <= config.auth.tokenRefreshBuffer
+  }
+
+  private isTokenExpired(tokenInfo: TokenInfo): boolean {
+    if (!tokenInfo.expires_at) return false
+    return Date.now() >= new Date(tokenInfo.expires_at).getTime()
+  }
+
+  private async performTokenRefresh(): Promise<TokenInfo> {
+    if (!this.state.token_info?.refresh_token) {
+      throw new Error('No refresh token available')
+    }
+
+    // Use a basic fetch to avoid circular dependency
+    const response = await fetch(getApiUrl(config.api.endpoints.auth.refresh), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        refresh_token: this.state.token_info.refresh_token
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error(`Token refresh failed: ${response.status}`)
+    }
+
+    const data = await response.json()
+    return data.token_info
+  }
+
+  private scheduleTokenRefresh(): void {
+    if (!this.state.token_info?.expires_at) return
+
+    if (this.refreshTimer) clearTimeout(this.refreshTimer)
+
+    const expiresAt = new Date(this.state.token_info.expires_at).getTime()
+    const refreshAt = expiresAt - config.auth.tokenRefreshBuffer
+    const delay = Math.max(0, refreshAt - Date.now())
+
+    if (delay > 0) {
+      this.refreshTimer = setTimeout(async () => {
+        try {
+          await this.refreshTokenIfNeeded()
+        } catch (error) {
+          console.error('[TokenManager] Scheduled refresh failed:', error)
+        }
+      }, delay)
+    }
+  }
+
+  private initializeSessionMonitoring(): void {
+    if (!config.auth.enableSessionMonitoring || typeof window === 'undefined') return
+
+    // Basic activity monitoring
+    const updateActivity = () => {
+      if (this.state.session) {
+        this.state.session.last_activity = new Date().toISOString()
+        secureStorage.set('session', JSON.stringify(this.state.session))
+      }
+    }
+
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart']
+    events.forEach(event => {
+      document.addEventListener(event, updateActivity, { passive: true })
+    })
+
+    // Session timeout check
+    this.sessionTimeoutTimer = setInterval(() => {
+      this.checkSessionTimeout()
+    }, config.auth.activityCheckInterval)
+  }
+
+  private checkSessionTimeout(): void {
+    if (!this.state.session) return
+
+    const lastActivity = new Date(this.state.session.last_activity).getTime()
+    const sessionExpiry = new Date(this.state.session.expires_at).getTime()
+
+    if (Date.now() - lastActivity > config.auth.sessionTimeout ||
+        Date.now() > sessionExpiry) {
+      this.handleSessionTimeout()
+    }
+  }
+
+  private handleSessionTimeout(): void {
+    this.clearTokens()
+
+    if (typeof window !== 'undefined' && window.dispatchEvent) {
+      window.dispatchEvent(new CustomEvent('sessionTimeout'))
+    }
+
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login?reason=session_timeout'
+    }
+  }
+
+  private loadStoredTokens(): void {
+    try {
+      const encryptedTokenData = secureStorage.get('token_info')
+      if (encryptedTokenData) {
+        const tokenInfo = this.decryptTokenData(encryptedTokenData)
+        if (tokenInfo && !this.isTokenExpired(tokenInfo)) {
+          this.state.token_info = tokenInfo
+        }
+      }
+
+      const sessionData = secureStorage.get('session')
+      if (sessionData) {
+        this.state.session = JSON.parse(sessionData)
+      }
+    } catch (error) {
+      console.error('[TokenManager] Failed to load tokens:', error)
+      this.clearTokens()
+    }
+  }
+
+  private encryptTokenData(tokenInfo: TokenInfo): string {
+    const payload = JSON.stringify(tokenInfo)
+    const key = config.app.name.slice(0, 32)
+    let encrypted = ''
+    for (let i = 0; i < payload.length; i++) {
+      encrypted += String.fromCharCode(payload.charCodeAt(i) ^ key.charCodeAt(i % key.length))
+    }
+    return btoa(encrypted)
+  }
+
+  private decryptTokenData(encryptedData: string): TokenInfo | null {
+    try {
+      const key = config.app.name.slice(0, 32)
+      const encrypted = atob(encryptedData)
+      let decrypted = ''
+      for (let i = 0; i < encrypted.length; i++) {
+        decrypted += String.fromCharCode(encrypted.charCodeAt(i) ^ key.charCodeAt(i % key.length))
+      }
+      return JSON.parse(decrypted)
+    } catch {
+      return null
+    }
+  }
+}
+
+// Global instances
+const secureStorage = new SecureStorage()
+const tokenManager = new TokenManager()
+
+// Export for use in auth.ts
+export { tokenManager }
+
 // Convert relative URLs to absolute in Node.js test environment (only when TEST_API_CLIENT env var is set)
 const getApiUrl = (endpoint: string): string => {
   const fullPath = config.api.basePath + endpoint
@@ -289,8 +581,8 @@ export async function fetchApi<T>(
     )
   }
 
-  // Get API key if not skipping auth
-  const apiKey = skipAuth ? null : auth.getApiKey()
+  // Get API key from token manager (with automatic refresh)
+  const apiKey = skipAuth ? null : await tokenManager.refreshTokenIfNeeded().then(info => info?.token || null)
 
   // Build headers
   const headers: HeadersInit = {
@@ -431,15 +723,16 @@ export async function fetchApi<T>(
 }
 
 // ============================================================================
-// CSRF TOKEN MANAGEMENT
+// CSRF TOKEN MANAGEMENT (SESSION-BASED)
 // ============================================================================
 
 /**
- * Get CSRF token from meta tag or cookie
- * This should be set by the backend and available in the HTML
+ * Get CSRF token from meta tag, cookie, or API endpoint
+ * CSRF tokens are session-based - generated once at login and valid for the entire session
+ * They are not refreshed with API tokens to keep the implementation simple
  */
 function getCsrfToken(): string | null {
-  // Try to get from meta tag first
+  // Try to get from meta tag first (set by server on initial page load)
   if (typeof document !== 'undefined') {
     const metaTag = document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement
     if (metaTag && metaTag.content) {
@@ -447,7 +740,7 @@ function getCsrfToken(): string | null {
     }
   }
 
-  // Try to get from cookie (fallback)
+  // Try to get from cookie (fallback, set during login)
   if (typeof document !== 'undefined' && document.cookie) {
     const csrfCookie = document.cookie
       .split(';')
@@ -457,6 +750,8 @@ function getCsrfToken(): string | null {
     }
   }
 
+  // Note: Could fall back to API call, but this would create circular dependency
+  // since API calls need CSRF tokens. Better to ensure tokens are set via meta tag or cookie.
   return null
 }
 

@@ -117,33 +117,43 @@ describe('Auth API', () => {
 
       auth.setApiKey(testKey)
 
-      expect(localStorage.getItem('slime_ui_auth_api_key')).toBe(testKey)
+      // Check that auth is now authenticated
+      expect(auth.isAuthenticated()).toBe(true)
+      // Check that we can retrieve the key
+      expect(auth.getApiKeySync()).toBe(testKey)
     })
 
-    it('getApiKey retrieves the key from secure storage', () => {
+    it('getApiKey retrieves the key from secure storage', async () => {
       const testKey = 'test-api-key-12345'
-      localStorage.setItem('slime_ui_auth_api_key', testKey)
 
-      const retrievedKey = auth.getApiKey()
+      // Set up auth state
+      auth.setApiKey(testKey)
+
+      const retrievedKey = await auth.getApiKey()
 
       expect(retrievedKey).toBe(testKey)
     })
 
-    it('getApiKey returns null when no key is set', () => {
-      localStorage.removeItem('slime_ui_auth_api_key')
+    it('getApiKey returns null when no key is set', async () => {
+      // Clear any existing auth
+      auth.removeApiKey()
 
-      const retrievedKey = auth.getApiKey()
+      const retrievedKey = await auth.getApiKey()
 
       expect(retrievedKey).toBeNull()
     })
 
     it('removeApiKey clears all auth data', () => {
       const testKey = 'test-api-key-12345'
-      localStorage.setItem('slime_ui_auth_api_key', testKey)
+
+      // Set up auth state
+      auth.setApiKey(testKey)
+      expect(auth.isAuthenticated()).toBe(true)
 
       auth.removeApiKey()
 
-      expect(localStorage.getItem('slime_ui_auth_api_key')).toBeNull()
+      expect(auth.isAuthenticated()).toBe(false)
+      expect(auth.getApiKeySync()).toBeNull()
     })
 
     it('isAuthenticated returns true when key is set', () => {
