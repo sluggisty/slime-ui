@@ -29,6 +29,7 @@ export interface ApiConfig {
       login: string
       register: string
       me: string
+      refresh: string
     }
     users: string
     apiKeys: string
@@ -65,6 +66,15 @@ export interface QueryConfig {
     staleTime: number
     retry: boolean
   }
+}
+
+export interface AuthConfig {
+  sessionTimeout: number // Session timeout in milliseconds
+  tokenRefreshBuffer: number // Refresh token this many ms before expiry
+  activityCheckInterval: number // Check user activity interval
+  maxSessionAge: number // Maximum session age
+  enableAutoRefresh: boolean // Enable automatic token refresh
+  enableSessionMonitoring: boolean // Enable session activity monitoring
 }
 
 export interface FeatureFlags {
@@ -104,6 +114,7 @@ export interface UiConfig {
 export interface Config {
   app: AppConfig
   api: ApiConfig
+  auth: AuthConfig
   query: QueryConfig
   features: FeatureFlags
   ui: UiConfig
@@ -134,10 +145,25 @@ function getApiConfig(): ApiConfig {
         login: '/auth/login',
         register: '/auth/register',
         me: '/auth/me',
+        refresh: '/auth/refresh',
       },
       users: '/users',
       apiKeys: '/api-keys',
     },
+  }
+}
+
+/**
+ * Get authentication configuration
+ */
+function getAuthConfig(): AuthConfig {
+  return {
+    sessionTimeout: 8 * 60 * 60 * 1000, // 8 hours
+    tokenRefreshBuffer: 5 * 60 * 1000, // 5 minutes before expiry
+    activityCheckInterval: 60 * 1000, // 1 minute
+    maxSessionAge: 24 * 60 * 60 * 1000, // 24 hours
+    enableAutoRefresh: true,
+    enableSessionMonitoring: true,
   }
 }
 
@@ -258,6 +284,7 @@ export function getConfig(): Config {
     const config: Config = {
       app: getAppConfig(),
       api: getApiConfig(),
+      auth: getAuthConfig(),
       query: getQueryConfig(),
       features: getFeatureFlags(),
       ui: getUiConfig(),
@@ -308,6 +335,10 @@ function validateConfig(config: Config): void {
 // CONFIGURATION INSTANCE
 // ============================================================================
 
+/**
+ * The application configuration instance
+ * This is computed once at module load time
+ */
 /**
  * The application configuration instance
  * This is computed once at module load time
