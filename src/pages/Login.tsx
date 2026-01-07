@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { LogIn, User, Lock, AlertCircle } from 'lucide-react'
 import { authApi, auth } from '../api/auth'
+import { validateLoginData, getSafeErrorMessage } from '../utils/validation'
 import type { LoginRequest } from '../types'
 import styles from './Login.module.css'
 
@@ -22,16 +23,23 @@ export default function Login() {
     setLoading(true)
 
     try {
-      const request: LoginRequest = { username, password }
+      // Validate form data
+      const validation = validateLoginData({ username, password })
+      if (!validation.isValid) {
+        setError(validation.errors.join(', '))
+        return
+      }
+
+      const request: LoginRequest = validation.sanitizedValue
       const response = await authApi.login(request)
-      
-      // Store API key
-      auth.setApiKey(response.token)
-      
+
+      // Store API key (response.token_info.token is the API key)
+      auth.setApiKey(response.token_info.token)
+
       // Redirect to dashboard
       navigate('/')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed')
+      setError(getSafeErrorMessage(err))
     } finally {
       setLoading(false)
     }

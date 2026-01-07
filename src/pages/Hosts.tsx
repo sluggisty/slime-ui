@@ -6,6 +6,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { api } from '../api/client'
 import { Table, Badge } from '../components/Table'
 import { Modal } from '../components/Modal'
+import { SafeValue, TruncatedText } from '../components/SafeText'
 import type { HostSummary } from '../types'
 import styles from './Hosts.module.css'
 
@@ -257,7 +258,7 @@ export default function Hosts() {
                 <div className={styles.hostIcon}>
                   <Server size={18} />
                 </div>
-                <span className={styles.hostname}>{host.hostname}</span>
+                <SafeValue value={host.hostname} className={styles.hostname} />
               </div>
             ),
           },
@@ -353,7 +354,7 @@ export default function Hosts() {
         }
       >
         <p>
-          Are you sure you want to delete <strong>{hostToDelete?.hostname}</strong>?
+          Are you sure you want to delete <strong><SafeValue value={hostToDelete?.hostname} /></strong>?
         </p>
         <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginTop: 'var(--space-sm)' }}>
           This action cannot be undone. All data for this host will be permanently removed.
