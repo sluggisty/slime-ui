@@ -8,6 +8,254 @@ import { auth } from './auth'
 import { errorHandler } from '../utils/errorHandler'
 
 // ============================================================================
+// ERROR CLASSES AND TYPES
+// ============================================================================
+
+/**
+ * Base API Error class with enhanced context and metadata
+ */
+export class ApiError extends Error {
+  public readonly status?: number
+  public readonly code?: string
+  public readonly details?: any
+  public readonly retryable: boolean
+  public readonly timestamp: number
+  public readonly context?: {
+    url: string
+    method: string
+    userId?: string
+    sessionId?: string
+    requestId?: string
+    duration?: number
+  }
+  public readonly category: string
+
+  constructor(
+    message: string,
+    status?: number,
+    code?: string,
+    details?: any,
+    retryable: boolean = false,
+    context?: ApiError['context']
+  ) {
+    super(message)
+    this.name = 'ApiError'
+    this.status = status
+    this.code = code
+    this.details = details
+    this.retryable = retryable
+    this.timestamp = Date.now()
+    this.context = context
+    this.category = this.determineCategory()
+  }
+
+  private determineCategory(): string {
+    if (this.status) {
+      if (this.status >= 400 && this.status < 500) {
+        return 'client_error'
+      } else if (this.status >= 500) {
+        return 'server_error'
+      }
+    }
+    return 'network_error'
+  }
+
+  /**
+   * Check if this error is retryable
+   */
+  isRetryable(): boolean {
+    return this.retryable
+  }
+
+  /**
+   * Get user-friendly message
+   */
+  getUserMessage(): string {
+    return this.getDefaultUserMessage()
+  }
+
+  private getDefaultUserMessage(): string {
+    switch (this.category) {
+      case 'network_error':
+        return 'Unable to connect to our servers. Please check your internet connection and try again.'
+      case 'client_error':
+        if (this.status === 401) {
+          return 'Your session has expired. Please sign in again.'
+        } else if (this.status === 403) {
+          return 'You don\'t have permission to perform this action.'
+        } else if (this.status === 404) {
+          return 'The requested resource was not found.'
+        } else if (this.status === 422) {
+          return 'Please check your input and try again.'
+        }
+        return 'There was a problem with your request. Please try again.'
+      case 'server_error':
+        return 'Our servers are experiencing issues. Please try again in a few moments.'
+      default:
+        return 'Something went wrong. Please try again.'
+    }
+  }
+
+  /**
+   * Convert to plain object for logging/serialization
+   */
+  toJSON() {
+    return {
+      name: this.name,
+      message: this.message,
+      status: this.status,
+      code: this.code,
+      details: this.details,
+      retryable: this.retryable,
+      timestamp: this.timestamp,
+      context: this.context,
+      category: this.category,
+      stack: this.stack
+    }
+  }
+}
+
+/**
+ * Network-specific error
+ */
+export class NetworkError extends ApiError {
+  constructor(message: string, context?: ApiError['context']) {
+    super(message, undefined, 'NETWORK_ERROR', undefined, true, context)
+    this.name = 'NetworkError'
+  }
+
+  getUserMessage(): string {
+    return 'Connection problem. Please check your internet connection and try again.'
+  }
+}
+
+/**
+ * Timeout-specific error
+ */
+export class TimeoutError extends ApiError {
+  constructor(timeout: number, context?: ApiError['context']) {
+    super(
+      `Request timeout after ${timeout}ms`,
+      408,
+      'TIMEOUT_ERROR',
+      { timeout },
+      true,
+      context
+    )
+    this.name = 'TimeoutError'
+  }
+
+  getUserMessage(): string {
+    return 'The request took too long to complete. Please try again.'
+  }
+}
+
+/**
+ * Validation-specific error
+ */
+export class ValidationError extends ApiError {
+  public readonly validationErrors: Record<string, string[]>
+
+  constructor(
+    message: string,
+    validationErrors: Record<string, string[]>,
+    context?: ApiError['context']
+  ) {
+    super(message, 422, 'VALIDATION_ERROR', { validationErrors }, false, context)
+    this.name = 'ValidationError'
+    this.validationErrors = validationErrors
+  }
+
+  getUserMessage(): string {
+    const fieldCount = Object.keys(this.validationErrors).length
+    return `Please correct the ${fieldCount === 1 ? 'error' : 'errors'} in your input and try again.`
+  }
+
+  /**
+   * Get validation errors for a specific field
+   */
+  getFieldErrors(field: string): string[] {
+    return this.validationErrors[field] || []
+  }
+
+  /**
+   * Get all validation errors as a flat array
+   */
+  getAllErrors(): Array<{ field: string; message: string }> {
+    return Object.entries(this.validationErrors).flatMap(([field, messages]) =>
+      messages.map(message => ({ field, message }))
+    )
+  }
+}
+
+/**
+ * Authentication-specific error
+ */
+export class AuthenticationError extends ApiError {
+  constructor(message: string = 'Authentication required', context?: ApiError['context']) {
+    super(message, 401, 'AUTHENTICATION_ERROR', undefined, false, context)
+    this.name = 'AuthenticationError'
+  }
+
+  getUserMessage(): string {
+    return 'Your session has expired. Please sign in again.'
+  }
+}
+
+/**
+ * Authorization-specific error
+ */
+export class AuthorizationError extends ApiError {
+  constructor(message: string = 'Insufficient permissions', context?: ApiError['context']) {
+    super(message, 403, 'AUTHORIZATION_ERROR', undefined, false, context)
+    this.name = 'AuthorizationError'
+  }
+
+  getUserMessage(): string {
+    return 'You don\'t have permission to perform this action.'
+  }
+}
+
+/**
+ * Rate limiting error
+ */
+export class RateLimitError extends ApiError {
+  public readonly resetTime: number
+
+  constructor(message: string, resetTime: number, context?: ApiError['context']) {
+    super(message, 429, 'RATE_LIMIT_ERROR', { resetTime }, true, context)
+    this.name = 'RateLimitError'
+    this.resetTime = resetTime
+  }
+
+  getUserMessage(): string {
+    const waitSeconds = Math.ceil((this.resetTime - Date.now()) / 1000)
+    return `Too many requests. Please wait ${waitSeconds} seconds before trying again.`
+  }
+
+  /**
+   * Get seconds until reset
+   */
+  getSecondsUntilReset(): number {
+    return Math.max(0, Math.ceil((this.resetTime - Date.now()) / 1000))
+  }
+}
+
+/**
+ * Server error (5xx)
+ */
+export class ServerError extends ApiError {
+  constructor(message: string, status: number, context?: ApiError['context']) {
+    super(message, status, 'SERVER_ERROR', undefined, true, context)
+    this.name = 'ServerError'
+  }
+
+  getUserMessage(): string {
+    return 'Our servers are experiencing issues. Please try again in a few moments.'
+  }
+}
+
+// ============================================================================
 // TYPES AND INTERFACES
 // ============================================================================
 
@@ -15,12 +263,29 @@ interface RequestOptions extends RequestInit {
   timeout?: number
   skipRetry?: boolean
   skipAuth?: boolean
+  retryConfig?: {
+    maxRetries?: number
+    retryDelay?: number
+    retryableStatuses?: number[]
+    exponentialBackoff?: boolean
+  }
 }
 
-interface ApiError extends Error {
+/**
+ * Legacy interface for backward compatibility
+ */
+interface LegacyApiError extends Error {
   status?: number
   code?: string
-  details?: unknown
+  details?: any
+  retryable?: boolean
+  timestamp: number
+  context?: {
+    url: string
+    method: string
+    userId?: string
+    sessionId?: string
+  }
 }
 
 interface RetryState {
@@ -537,23 +802,132 @@ function validateApiResponse<T>(data: unknown, endpoint: string): T {
   return data as T
 }
 
+// ============================================================================
+// UTILITY FUNCTIONS
+// ============================================================================
+
 /**
- * Create API error with additional context
+ * Generate a unique request ID
  */
-function createApiError(message: string, response?: Response, originalError?: unknown): ApiError {
-  const error = new Error(message) as ApiError
+function generateRequestId(): string {
+  return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+}
 
-  if (response) {
-    error.status = response.status
+/**
+ * Get current user ID from auth context
+ */
+function getCurrentUserId(): string | undefined {
+  // This would integrate with your auth system
+  return undefined
+}
+
+/**
+ * Get current session ID
+ */
+function getCurrentSessionId(): string | undefined {
+  if (typeof sessionStorage !== 'undefined') {
+    let sessionId = sessionStorage.getItem('api_session_id')
+    if (!sessionId) {
+      sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      sessionStorage.setItem('api_session_id', sessionId)
+    }
+    return sessionId
+  }
+  return undefined
+}
+
+/**
+ * Create appropriate error type based on response/status
+ */
+function createApiError(
+  message: string,
+  response?: Response,
+  originalError?: Error | unknown,
+  requestContext?: { url: string; method: string; duration?: number }
+): ApiError {
+  const status = response?.status
+  const url = requestContext?.url || response?.url || 'unknown'
+  const method = requestContext?.method || 'GET'
+  const requestId = generateRequestId()
+
+  const context: ApiError['context'] = {
+    url,
+    method,
+    userId: getCurrentUserId(),
+    sessionId: getCurrentSessionId(),
+    requestId,
+    duration: requestContext?.duration
   }
 
-  if (originalError && typeof originalError === 'object') {
-    const err = originalError as Record<string, unknown>
-    error.code = (err.code as string) || (err.error as string)
-    error.details = err.details || err
+  // Handle different error types based on status or error type
+  if (originalError instanceof TimeoutError) {
+    return originalError
   }
 
-  return error
+  if (status === 401) {
+    return new AuthenticationError(message, context)
+  }
+
+  if (status === 403) {
+    return new AuthorizationError(message, context)
+  }
+
+  if (status === 404) {
+    return new ApiError(message, status, 'NOT_FOUND', undefined, false, context)
+  }
+
+  if (status === 408) {
+    return new TimeoutError(30000, context) // Default timeout
+  }
+
+  if (status === 422) {
+    // Try to extract validation errors from response
+    let validationErrors: Record<string, string[]> = {}
+    if (response) {
+      try {
+        // This would need to be implemented based on your API response format
+        // For now, create a generic validation error
+        validationErrors = { general: [message] }
+      } catch {
+        // If we can't parse validation errors, create generic validation error
+        validationErrors = { general: [message] }
+      }
+    }
+    return new ValidationError(message, validationErrors, context)
+  }
+
+  if (status === 429) {
+    // Extract retry-after header if available
+    const retryAfter = response?.headers.get('retry-after')
+    const resetTime = retryAfter
+      ? Date.now() + (parseInt(retryAfter) * 1000)
+      : Date.now() + 60000 // Default 1 minute
+
+    return new RateLimitError(message, resetTime, context)
+  }
+
+  if (status && status >= 500) {
+    return new ServerError(message, status, context)
+  }
+
+  if (status && status >= 400 && status < 500) {
+    return new ApiError(message, status, `CLIENT_ERROR_${status}`, undefined, false, context)
+  }
+
+  // Network or unknown errors
+  if (originalError instanceof Error && originalError.name === 'TypeError' && originalError.message.includes('fetch')) {
+    return new NetworkError(message, context)
+  }
+
+  // Generic API error
+  return new ApiError(
+    message,
+    status,
+    status ? `HTTP_${status}` : 'NETWORK_ERROR',
+    originalError instanceof Error ? { originalError: originalError.message } : originalError,
+    isRetryableStatus(status),
+    context
+  )
 }
 
 // ============================================================================
@@ -568,18 +942,34 @@ export async function fetchApi<T>(
     timeout = config.api.timeout,
     skipRetry = false,
     skipAuth = false,
+    retryConfig,
     ...fetchOptions
   } = options
+
+  // Enhanced retry configuration
+  const retryOptions = {
+    maxRetries: retryConfig?.maxRetries ?? config.api.retry.maxAttempts,
+    retryDelay: retryConfig?.retryDelay ?? config.api.retry.baseDelay,
+    retryableStatuses: retryConfig?.retryableStatuses ?? [408, 429, 500, 502, 503, 504],
+    exponentialBackoff: retryConfig?.exponentialBackoff ?? config.api.retry.exponentialBackoff
+  }
 
   // Check rate limiting
   if (!rateLimiter.checkLimit()) {
     const resetTime = rateLimiter.getResetTime()
     const waitTime = resetTime - Date.now()
-    throw createApiError(
+    const rateLimitError = new RateLimitError(
       `Rate limit exceeded. Try again in ${Math.ceil(waitTime / 1000)} seconds.`,
-      undefined,
-      { code: 'RATE_LIMIT_EXCEEDED' }
+      resetTime,
+      {
+        url: getApiUrl(endpoint),
+        method: fetchOptions.method || 'GET',
+        userId: getCurrentUserId(),
+        sessionId: getCurrentSessionId(),
+        requestId: generateRequestId()
+      }
     )
+    throw rateLimitError
   }
 
   // Get API key from token manager (with automatic refresh)
@@ -610,9 +1000,11 @@ export async function fetchApi<T>(
   // Run request interceptors
   processedOptions = await interceptors.runRequestInterceptors(url, processedOptions)
 
-  // Retry logic
-  const maxAttempts = skipRetry ? 1 : config.api.retry.maxAttempts
+  // Enhanced retry logic
+  const maxAttempts = skipRetry ? 1 : retryOptions.maxRetries
   let lastError: unknown
+  const requestStartTime = Date.now()
+  const requestId = generateRequestId()
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const retryState: RetryState = { attempt, delay: 0 }
@@ -648,8 +1040,11 @@ export async function fetchApi<T>(
           errorData = { error: 'Unknown error' }
         }
 
-        const errorMessage = errorData.error || `HTTP ${response.status}: ${response.statusText}`
-        const apiError = createApiError(errorMessage, response, errorData)
+        const errorMessage = (errorData as any)?.error || errorData?.message || `HTTP ${response.status}: ${response.statusText}`
+        const apiError = createApiError(errorMessage, response, errorData, {
+          url: url.toString(),
+          method: fetchOptions.method || 'GET'
+        })
 
         // Check if error is retryable
         if (attempt < maxAttempts && isRetryableError(apiError)) {
@@ -686,9 +1081,19 @@ export async function fetchApi<T>(
 
       // Handle timeout
       if (error instanceof Error && error.name === 'AbortError') {
-        const timeoutError = createApiError(`Request timeout after ${timeout}ms`, undefined, error)
-        if (attempt < maxAttempts && isRetryableError(timeoutError)) {
-          retryState.delay = calculateRetryDelay(attempt)
+        const timeoutError = new TimeoutError(timeout, {
+          url: url.toString(),
+          method: fetchOptions.method || 'GET',
+          userId: getCurrentUserId(),
+          sessionId: getCurrentSessionId(),
+          requestId
+        })
+
+        if (attempt < maxAttempts && timeoutError.isRetryable()) {
+          retryState.delay = retryOptions.exponentialBackoff
+            ? retryOptions.retryDelay * Math.pow(2, attempt - 1)
+            : retryOptions.retryDelay
+
           if (config.features.enableDebugLogging) {
             console.log(`[API Retry] Timeout on attempt ${attempt}, retrying in ${retryState.delay}ms`)
           }
@@ -700,9 +1105,19 @@ export async function fetchApi<T>(
 
       // Handle network errors
       if (error instanceof Error && error.name === 'TypeError' && error.message.includes('fetch')) {
-        const networkError = createApiError('Network error', undefined, error)
-        if (attempt < maxAttempts && isRetryableError(networkError)) {
-          retryState.delay = calculateRetryDelay(attempt)
+        const networkError = new NetworkError(error.message, {
+          url: url.toString(),
+          method: fetchOptions.method || 'GET',
+          userId: getCurrentUserId(),
+          sessionId: getCurrentSessionId(),
+          requestId
+        })
+
+        if (attempt < maxAttempts && networkError.isRetryable()) {
+          retryState.delay = retryOptions.exponentialBackoff
+            ? retryOptions.retryDelay * Math.pow(2, attempt - 1)
+            : retryOptions.retryDelay
+
           if (config.features.enableDebugLogging) {
             console.log(`[API Retry] Network error on attempt ${attempt}, retrying in ${retryState.delay}ms`)
           }
@@ -720,14 +1135,26 @@ export async function fetchApi<T>(
   }
 
   // This should never be reached, but just in case
-  const finalError = lastError || createApiError('Request failed after all retry attempts')
+  const requestDuration = Date.now() - requestStartTime
+  const finalError = lastError instanceof Error
+    ? lastError
+    : createApiError('Request failed after all retry attempts', undefined, lastError, {
+        url: url.toString(),
+        method: fetchOptions.method || 'GET',
+        duration: requestDuration
+      })
+
+  // Enhance error with request context if it's an ApiError
+  if (finalError instanceof ApiError && finalError.context) {
+    finalError.context.duration = requestDuration
+  }
 
   // Report the error using the global error handler
   await errorHandler.handleNetworkError(
     finalError,
     endpoint,
     fetchOptions.method || 'GET',
-    (finalError as any).status
+    finalError.status
   )
 
   throw finalError
