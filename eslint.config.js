@@ -5,7 +5,32 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'coverage', 'playwright-report', 'test-results', '.vite', '**/*.config.js', 'e2e'] },
+  { ignores: ['dist', 'node_modules', 'coverage', 'playwright-report', 'test-results', '.vite', '**/*.config.js', 'e2e', 'scripts/**'] },
+
+  // Node.js files (CommonJS, scripts)
+  {
+    files: ['scripts/**/*.{js,ts}'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        require: 'readonly',
+        module: 'readonly',
+        exports: 'readonly',
+        global: 'readonly',
+      },
+    },
+    rules: {
+      ...js.configs.recommended.rules,
+      '@typescript-eslint/no-require-imports': 'off',
+      'no-undef': 'off',
+    },
+  },
+
+  // Browser/React files
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

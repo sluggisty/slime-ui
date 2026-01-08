@@ -23,6 +23,9 @@ export const HealthDashboard = lazy(() => import('./components/HealthDashboard')
 export const ErrorExample = lazy(() => import('./components/ErrorExample'));
 
 function App() {
+  // Use a fixed timestamp for error context to avoid calling Date.now() during render
+  const appStartTime = React.useRef(Date.now()).current
+
   // Initialize global error handler, logger, and health monitor
   React.useEffect(() => {
     errorHandler.initialize();
@@ -81,7 +84,7 @@ function App() {
                 <ErrorBoundary
                   level='route'
                   onError={handleRouteError}
-                  context={{ route: '/login', timestamp: Date.now() }}
+                  context={{ route: '/login', timestamp: appStartTime }}
                 >
                   <Suspense fallback={<PageLoading message='Loading login...' />}>
                     {auth.isAuthenticated() ? <Navigate to='/' replace /> : <Login />}
@@ -95,7 +98,7 @@ function App() {
                 <ErrorBoundary
                   level='route'
                   onError={handleRouteError}
-                  context={{ route: '/register', timestamp: Date.now() }}
+                  context={{ route: '/register', timestamp: appStartTime }}
                 >
                   <Suspense fallback={<PageLoading message='Loading registration...' />}>
                     {auth.isAuthenticated() ? <Navigate to='/' replace /> : <Register />}
@@ -111,7 +114,7 @@ function App() {
                 <ErrorBoundary
                   level='route'
                   onError={handleRouteError}
-                  context={{ route: 'layout', timestamp: Date.now() }}
+                  context={{ route: 'layout', timestamp: appStartTime }}
                 >
                   <Layout />
                 </ErrorBoundary>
@@ -123,7 +126,7 @@ function App() {
                   <ErrorBoundary
                     level='route'
                     onError={handleRouteError}
-                    context={{ route: 'dashboard', timestamp: Date.now() }}
+                    context={{ route: 'dashboard', timestamp: appStartTime }}
                     enableRetry={true}
                   >
                     <Suspense fallback={<PageLoading message='Loading dashboard...' />}>
@@ -140,7 +143,7 @@ function App() {
                   <ErrorBoundary
                     level='route'
                     onError={handleRouteError}
-                    context={{ route: 'hosts', timestamp: Date.now() }}
+                    context={{ route: 'hosts', timestamp: appStartTime }}
                     enableRetry={true}
                   >
                     <Suspense fallback={<PageLoading message='Loading hosts...' />}>
@@ -157,7 +160,7 @@ function App() {
                   <ErrorBoundary
                     level='route'
                     onError={handleRouteError}
-                    context={{ route: 'host-detail', timestamp: Date.now() }}
+                    context={{ route: 'host-detail', timestamp: appStartTime }}
                     enableRetry={true}
                   >
                     <Suspense fallback={<PageLoading message='Loading host details...' />}>
@@ -174,7 +177,7 @@ function App() {
                   <ErrorBoundary
                     level='route'
                     onError={handleRouteError}
-                    context={{ route: 'users', timestamp: Date.now() }}
+                    context={{ route: 'users', timestamp: appStartTime }}
                     enableRetry={true}
                   >
                     <Suspense fallback={<PageLoading message='Loading user access...' />}>
