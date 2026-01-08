@@ -53,10 +53,10 @@ export function useComponentPerformance(componentName: string) {
       logger.trackAction(action, { component: componentName }, data)
     },
 
-    measureAsync: async <T>(
+    measureAsync: async function <T>(
       operationName: string,
       operation: () => Promise<T>
-    ): Promise<T> => {
+    ): Promise<T> {
       return logger.measureAsync(`${componentName}_${operationName}`, operation, {
         component: componentName
       })
@@ -69,11 +69,11 @@ export function useComponentPerformance(componentName: string) {
  */
 export function useApiPerformance() {
   return {
-    measureApiCall: async <T>(
+    measureApiCall: async function <T>(
       endpoint: string,
       method: string,
       operation: () => Promise<T>
-    ): Promise<T> => {
+    ): Promise<T> {
       return logger.measureAsync(`api_${method}_${endpoint}`, operation, {
         route: endpoint,
         action: 'api_call',
