@@ -1,11 +1,11 @@
-import React from 'react'
-import styles from './Loading.module.css'
+import React from 'react';
+import styles from './Loading.module.css';
 
 interface LoadingProps {
-  message?: string
-  size?: 'small' | 'medium' | 'large'
-  variant?: 'spinner' | 'dots' | 'pulse'
-  fullScreen?: boolean
+  message?: string;
+  size?: 'small' | 'medium' | 'large';
+  variant?: 'spinner' | 'dots' | 'pulse';
+  fullScreen?: boolean;
 }
 
 /**
@@ -15,11 +15,9 @@ export const Loading: React.FC<LoadingProps> = ({
   message = 'Loading...',
   size = 'medium',
   variant = 'spinner',
-  fullScreen = false
+  fullScreen = false,
 }) => {
-  const containerClass = fullScreen
-    ? styles.fullScreenContainer
-    : styles.container
+  const containerClass = fullScreen ? styles.fullScreenContainer : styles.container;
 
   return (
     <div className={containerClass}>
@@ -38,47 +36,27 @@ export const Loading: React.FC<LoadingProps> = ({
           </div>
         )}
 
-        {variant === 'pulse' && (
-          <div className={styles.pulse}></div>
-        )}
+        {variant === 'pulse' && <div className={styles.pulse}></div>}
       </div>
 
-      {message && (
-        <p className={`${styles.message} ${styles[size]}`}>
-          {message}
-        </p>
-      )}
+      {message && <p className={`${styles.message} ${styles[size]}`}>{message}</p>}
     </div>
-  )
-}
+  );
+};
 
 /**
  * Page-level loading component for route transitions
  */
-export const PageLoading: React.FC<{ message?: string }> = ({
-  message = 'Loading page...'
-}) => (
-  <Loading
-    message={message}
-    size="large"
-    variant="spinner"
-    fullScreen={true}
-  />
-)
+export const PageLoading: React.FC<{ message?: string }> = ({ message = 'Loading page...' }) => (
+  <Loading message={message} size='large' variant='spinner' fullScreen={true} />
+);
 
 /**
  * Component-level loading for smaller UI elements
  */
-export const ComponentLoading: React.FC<{ message?: string }> = ({
-  message
-}) => (
-  <Loading
-    message={message}
-    size="small"
-    variant="dots"
-    fullScreen={false}
-  />
-)
+export const ComponentLoading: React.FC<{ message?: string }> = ({ message }) => (
+  <Loading message={message} size='small' variant='dots' fullScreen={false} />
+);
 
 /**
  * Inline loading for buttons and small interactions
@@ -87,20 +65,16 @@ export const InlineLoading: React.FC = () => (
   <div className={styles.inlineLoader}>
     <div className={styles.miniSpinner}></div>
   </div>
-)
+);
 
 /**
  * Skeleton loading for content placeholders
  */
 export const SkeletonLoading: React.FC<{
-  lines?: number
-  width?: string | number
-  height?: string | number
-}> = ({
-  lines = 3,
-  width = '100%',
-  height = '1rem'
-}) => (
+  lines?: number;
+  width?: string | number;
+  height?: string | number;
+}> = ({ lines = 3, width = '100%', height = '1rem' }) => (
   <div className={styles.skeletonContainer}>
     {Array.from({ length: lines }, (_, index) => (
       <div
@@ -108,9 +82,9 @@ export const SkeletonLoading: React.FC<{
         className={styles.skeletonLine}
         style={{
           width: index === lines - 1 ? '60%' : width, // Last line shorter
-          height
+          height,
         }}
       />
     ))}
   </div>
-)
+);

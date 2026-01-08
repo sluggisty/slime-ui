@@ -14,12 +14,12 @@ import type {
   LoginResponse,
   HealthResponse,
   HostsResponse,
-} from '../types'
+} from '../types';
 
 // Helper to generate UUIDs for testing
 const generateTestUUID = (prefix: string, index: number = 1): string => {
-  return `${prefix}-${index.toString().padStart(8, '0')}-0000-0000-0000-000000000000`
-}
+  return `${prefix}-${index.toString().padStart(8, '0')}-0000-0000-0000-000000000000`;
+};
 
 // Host Summary factories
 export const createMockHostSummary = (overrides?: Partial<HostSummary>): HostSummary => ({
@@ -32,7 +32,7 @@ export const createMockHostSummary = (overrides?: Partial<HostSummary>): HostSum
   os_version_patch: '0',
   last_seen: new Date().toISOString(),
   ...overrides,
-})
+});
 
 export const createMockHostsArray = (count: number): HostSummary[] => {
   return Array.from({ length: count }, (_, i) =>
@@ -42,8 +42,8 @@ export const createMockHostsArray = (count: number): HostSummary[] => {
       os_name: i % 2 === 0 ? 'Fedora' : 'Debian',
       os_version: `${40 + i}`,
     })
-  )
-}
+  );
+};
 
 // System Data factories
 export const createMockSystemData = (overrides?: Partial<SystemData>): SystemData => ({
@@ -72,7 +72,7 @@ export const createMockSystemData = (overrides?: Partial<SystemData>): SystemDat
     is_virtual: true,
   },
   ...overrides,
-})
+});
 
 // Hardware Data factories
 export const createMockHardwareData = (overrides?: Partial<HardwareData>): HardwareData => ({
@@ -105,7 +105,7 @@ export const createMockHardwareData = (overrides?: Partial<HardwareData>): Hardw
     ],
   },
   ...overrides,
-})
+});
 
 // Network Data factories
 export const createMockNetworkData = (overrides?: Partial<NetworkData>): NetworkData => ({
@@ -130,7 +130,7 @@ export const createMockNetworkData = (overrides?: Partial<NetworkData>): Network
     nameservers: ['8.8.8.8', '8.8.4.4'],
   },
   ...overrides,
-})
+});
 
 // Packages Data factories
 export const createMockPackagesData = (overrides?: Partial<PackagesData>): PackagesData => ({
@@ -142,7 +142,7 @@ export const createMockPackagesData = (overrides?: Partial<PackagesData>): Packa
     security_count: 3,
   },
   ...overrides,
-})
+});
 
 // Services Data factories
 export const createMockServicesData = (overrides?: Partial<ServicesData>): ServicesData => ({
@@ -158,7 +158,7 @@ export const createMockServicesData = (overrides?: Partial<ServicesData>): Servi
   ],
   failed_units: [],
   ...overrides,
-})
+});
 
 // Filesystem Data factories
 export const createMockFilesystemData = (overrides?: Partial<FilesystemData>): FilesystemData => ({
@@ -171,7 +171,7 @@ export const createMockFilesystemData = (overrides?: Partial<FilesystemData>): F
     },
   ],
   ...overrides,
-})
+});
 
 // Security Data factories
 export const createMockSecurityData = (overrides?: Partial<SecurityData>): SecurityData => ({
@@ -183,14 +183,14 @@ export const createMockSecurityData = (overrides?: Partial<SecurityData>): Secur
     enabled: false,
   },
   ...overrides,
-})
+});
 
 // Logs Data factories
 export const createMockLogsData = (overrides?: Partial<LogsData>): LogsData => ({
   kernel_errors: [],
   service_failures: [],
   ...overrides,
-})
+});
 
 // Report Data factories
 export const createMockReportData = (overrides?: Partial<ReportData>): ReportData => ({
@@ -203,13 +203,13 @@ export const createMockReportData = (overrides?: Partial<ReportData>): ReportDat
   security: createMockSecurityData(),
   logs: createMockLogsData(),
   ...overrides,
-})
+});
 
 // Report factories
 export const createMockReport = (overrides?: Partial<Report>): Report => {
-  const hostId = overrides?.meta?.host_id || generateTestUUID('host', 1)
-  const hostname = overrides?.meta?.hostname || 'test-host-1'
-  const timestamp = new Date().toISOString()
+  const hostId = overrides?.meta?.host_id || generateTestUUID('host', 1);
+  const hostname = overrides?.meta?.hostname || 'test-host-1';
+  const timestamp = new Date().toISOString();
 
   return {
     id: generateTestUUID('report', 1),
@@ -224,8 +224,8 @@ export const createMockReport = (overrides?: Partial<Report>): Report => {
     },
     data: createMockReportData(overrides?.data),
     errors: overrides?.errors,
-  }
-}
+  };
+};
 
 // User factories
 export const createMockUser = (overrides?: Partial<User>): User => ({
@@ -239,14 +239,14 @@ export const createMockUser = (overrides?: Partial<User>): User => ({
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
   ...overrides,
-})
+});
 
 // Auth response factories
 export const createMockLoginResponse = (overrides?: Partial<LoginResponse>): LoginResponse => ({
   user: createMockUser(overrides?.user),
   token: 'test-api-key-token-12345',
   ...overrides,
-})
+});
 
 // API Response factories
 export const createMockHealthResponse = (overrides?: Partial<HealthResponse>): HealthResponse => ({
@@ -254,17 +254,13 @@ export const createMockHealthResponse = (overrides?: Partial<HealthResponse>): H
   service: 'operational',
   database: 'connected',
   ...overrides,
-})
+});
 
 export const createMockHostsResponse = (overrides?: Partial<HostsResponse>): HostsResponse => {
-  const hosts = overrides?.hosts || createMockHostsArray(3)
+  const hosts = overrides?.hosts || createMockHostsArray(3);
   return {
     hosts,
     total: hosts.length,
     ...overrides,
-  }
-}
-
-
-
-
+  };
+};

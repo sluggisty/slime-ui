@@ -6,118 +6,118 @@
  * feature flags, and other application-wide settings.
  */
 
-import { config as envConfig } from './env'
+import { config as envConfig } from './env';
 
 // ============================================================================
 // TYPE DEFINITIONS
 // ============================================================================
 
 export interface ApiConfig {
-  baseUrl: string
-  basePath: string
-  timeout: number
+  baseUrl: string;
+  basePath: string;
+  timeout: number;
   retry: {
-    maxAttempts: number
-    backoffMultiplier: number
-    initialDelay: number
-  }
+    maxAttempts: number;
+    backoffMultiplier: number;
+    initialDelay: number;
+  };
   endpoints: {
-    health: string
-    hosts: string
-    hostById: (id: string) => string
+    health: string;
+    hosts: string;
+    hostById: (id: string) => string;
     auth: {
-      login: string
-      register: string
-      me: string
-      refresh: string
-    }
-    users: string
-    apiKeys: string
-  }
+      login: string;
+      register: string;
+      me: string;
+      refresh: string;
+    };
+    users: string;
+    apiKeys: string;
+  };
 }
 
 export interface QueryConfig {
   defaultOptions: {
     queries: {
-      staleTime: number
-      gcTime: number
-      retry: boolean | number
-      retryDelay: number
-      refetchOnWindowFocus: boolean
-      refetchOnMount: boolean
-    }
+      staleTime: number;
+      gcTime: number;
+      retry: boolean | number;
+      retryDelay: number;
+      refetchOnWindowFocus: boolean;
+      refetchOnMount: boolean;
+    };
     mutations: {
-      retry: boolean | number
-      retryDelay: number
-    }
-  }
+      retry: boolean | number;
+      retryDelay: number;
+    };
+  };
   // Specific query configurations for different pages/features
   hosts: {
-    staleTime: number
-    refetchInterval?: number
-  }
+    staleTime: number;
+    refetchInterval?: number;
+  };
   hostDetail: {
-    staleTime: number
-  }
+    staleTime: number;
+  };
   userAccess: {
-    staleTime: number
-  }
+    staleTime: number;
+  };
   auth: {
-    staleTime: number
-    retry: boolean
-  }
+    staleTime: number;
+    retry: boolean;
+  };
 }
 
 export interface AuthConfig {
-  sessionTimeout: number // Session timeout in milliseconds
-  tokenRefreshBuffer: number // Refresh token this many ms before expiry
-  activityCheckInterval: number // Check user activity interval
-  maxSessionAge: number // Maximum session age
-  enableAutoRefresh: boolean // Enable automatic token refresh
-  enableSessionMonitoring: boolean // Enable session activity monitoring
+  sessionTimeout: number; // Session timeout in milliseconds
+  tokenRefreshBuffer: number; // Refresh token this many ms before expiry
+  activityCheckInterval: number; // Check user activity interval
+  maxSessionAge: number; // Maximum session age
+  enableAutoRefresh: boolean; // Enable automatic token refresh
+  enableSessionMonitoring: boolean; // Enable session activity monitoring
 }
 
 export interface FeatureFlags {
-  enableRealTimeUpdates: boolean
-  enableDebugLogging: boolean
-  enableErrorReporting: boolean
-  enableAnalytics: boolean
-  enablePWA: boolean
+  enableRealTimeUpdates: boolean;
+  enableDebugLogging: boolean;
+  enableErrorReporting: boolean;
+  enableAnalytics: boolean;
+  enablePWA: boolean;
 }
 
 export interface AppConfig {
-  name: string
-  version: string
-  environment: 'development' | 'production' | 'test'
-  isDevelopment: boolean
-  isProduction: boolean
-  isTest: boolean
+  name: string;
+  version: string;
+  environment: 'development' | 'production' | 'test';
+  isDevelopment: boolean;
+  isProduction: boolean;
+  isTest: boolean;
 }
 
 export interface UiConfig {
   theme: {
-    primaryColor: string
-    secondaryColor: string
-    dangerColor: string
-    successColor: string
-  }
+    primaryColor: string;
+    secondaryColor: string;
+    dangerColor: string;
+    successColor: string;
+  };
   pagination: {
-    defaultPageSize: number
-    maxPageSize: number
-  }
+    defaultPageSize: number;
+    maxPageSize: number;
+  };
   animations: {
-    enabled: boolean
-    duration: number
-  }
+    enabled: boolean;
+    duration: number;
+  };
 }
 
 export interface Config {
-  app: AppConfig
-  api: ApiConfig
-  auth: AuthConfig
-  query: QueryConfig
-  features: FeatureFlags
-  ui: UiConfig
+  app: AppConfig;
+  api: ApiConfig;
+  auth: AuthConfig;
+  query: QueryConfig;
+  features: FeatureFlags;
+  ui: UiConfig;
 }
 
 // ============================================================================
@@ -150,7 +150,7 @@ function getApiConfig(): ApiConfig {
       users: '/users',
       apiKeys: '/api-keys',
     },
-  }
+  };
 }
 
 /**
@@ -164,15 +164,15 @@ function getAuthConfig(): AuthConfig {
     maxSessionAge: 24 * 60 * 60 * 1000, // 24 hours
     enableAutoRefresh: true,
     enableSessionMonitoring: true,
-  }
+  };
 }
 
 /**
  * Get React Query configuration
  */
 function getQueryConfig(): QueryConfig {
-  const baseRetry = envConfig.isDevelopment ? false : 3
-  const baseRetryDelay = 1000 // 1 second
+  const baseRetry = envConfig.isDevelopment ? false : 3;
+  const baseRetryDelay = 1000; // 1 second
 
   return {
     defaultOptions: {
@@ -204,7 +204,7 @@ function getQueryConfig(): QueryConfig {
       staleTime: 15 * 60 * 1000, // 15 minutes
       retry: false, // Auth queries should not retry automatically
     },
-  }
+  };
 }
 
 /**
@@ -217,7 +217,7 @@ function getFeatureFlags(): FeatureFlags {
     enableErrorReporting: envConfig.isProduction,
     enableAnalytics: envConfig.isProduction,
     enablePWA: true,
-  }
+  };
 }
 
 /**
@@ -239,14 +239,14 @@ function getUiConfig(): UiConfig {
       enabled: true,
       duration: 200, // milliseconds
     },
-  }
+  };
 }
 
 /**
  * Get application configuration
  */
 function getAppConfig(): AppConfig {
-  const environment = import.meta.env.MODE as 'development' | 'production' | 'test'
+  const environment = import.meta.env.MODE as 'development' | 'production' | 'test';
 
   return {
     name: envConfig.appName,
@@ -255,7 +255,7 @@ function getAppConfig(): AppConfig {
     isDevelopment: envConfig.isDevelopment,
     isProduction: envConfig.isProduction,
     isTest: environment === 'test',
-  }
+  };
 }
 
 // ============================================================================
@@ -274,11 +274,11 @@ export function getConfig(): Config {
   try {
     // Validate environment configuration
     if (!envConfig.apiBaseUrl) {
-      throw new Error('API base URL is required')
+      throw new Error('API base URL is required');
     }
 
     if (!envConfig.appName) {
-      throw new Error('Application name is required')
+      throw new Error('Application name is required');
     }
 
     const config: Config = {
@@ -288,15 +288,15 @@ export function getConfig(): Config {
       query: getQueryConfig(),
       features: getFeatureFlags(),
       ui: getUiConfig(),
-    }
+    };
 
     // Additional validation can be added here
-    validateConfig(config)
+    validateConfig(config);
 
-    return config
+    return config;
   } catch (error) {
-    console.error('Configuration validation failed:', error)
-    throw error
+    console.error('Configuration validation failed:', error);
+    throw error;
   }
 }
 
@@ -306,28 +306,28 @@ export function getConfig(): Config {
 function validateConfig(config: Config): void {
   // Validate API URLs
   try {
-    new URL(config.api.baseUrl)
+    new URL(config.api.baseUrl);
   } catch {
-    throw new Error(`Invalid API base URL: ${config.api.baseUrl}`)
+    throw new Error(`Invalid API base URL: ${config.api.baseUrl}`);
   }
 
   // Validate timeouts
   if (config.api.timeout <= 0) {
-    throw new Error('API timeout must be greater than 0')
+    throw new Error('API timeout must be greater than 0');
   }
 
   // Validate retry configuration
   if (config.api.retry.maxAttempts < 0) {
-    throw new Error('Max retry attempts must be non-negative')
+    throw new Error('Max retry attempts must be non-negative');
   }
 
   // Validate query configuration
   if (config.query.defaultOptions.queries.staleTime < 0) {
-    throw new Error('Query stale time must be non-negative')
+    throw new Error('Query stale time must be non-negative');
   }
 
   if (config.query.defaultOptions.queries.gcTime < 0) {
-    throw new Error('Query gc time must be non-negative')
+    throw new Error('Query gc time must be non-negative');
   }
 }
 
@@ -343,7 +343,7 @@ function validateConfig(config: Config): void {
  * The application configuration instance
  * This is computed once at module load time
  */
-export const config = getConfig()
+export const config = getConfig();
 
 // ============================================================================
 // UTILITY FUNCTIONS
@@ -353,53 +353,56 @@ export const config = getConfig()
  * Get full API endpoint URL
  */
 export function getApiEndpoint(endpoint: string): string {
-  return `${config.api.basePath}${endpoint}`
+  return `${config.api.basePath}${endpoint}`;
 }
 
 /**
  * Get full API URL for requests
  */
 export function getApiUrl(endpoint: string): string {
-  const fullEndpoint = getApiEndpoint(endpoint)
+  const fullEndpoint = getApiEndpoint(endpoint);
 
   // In test environment with TEST_API_CLIENT, convert relative URLs to absolute
   if (config.app.isTest && fullEndpoint.startsWith('/')) {
-    return `${config.api.baseUrl}${fullEndpoint}`
+    return `${config.api.baseUrl}${fullEndpoint}`;
   }
 
-  return fullEndpoint
+  return fullEndpoint;
 }
 
 /**
  * Check if a feature is enabled
  */
 export function isFeatureEnabled(feature: keyof FeatureFlags): boolean {
-  return config.features[feature]
+  return config.features[feature];
 }
 
 /**
  * Get query options for a specific feature
  */
-export function getQueryOptions(feature?: keyof QueryConfig): QueryConfig['defaultOptions']['queries'] {
+export function getQueryOptions(
+  feature?: keyof QueryConfig
+): QueryConfig['defaultOptions']['queries'] {
   if (feature && feature in config.query) {
-    const featureConfig = config.query[feature] as Partial<QueryConfig['defaultOptions']['queries']>
+    const featureConfig = config.query[feature] as Partial<
+      QueryConfig['defaultOptions']['queries']
+    >;
     return {
       ...config.query.defaultOptions.queries,
       ...featureConfig,
-    }
+    };
   }
 
-  return config.query.defaultOptions.queries
+  return config.query.defaultOptions.queries;
 }
 
 /**
  * Get mutation options
  */
 export function getMutationOptions(): QueryConfig['defaultOptions']['mutations'] {
-  return config.query.defaultOptions.mutations
+  return config.query.defaultOptions.mutations;
 }
 
 // ============================================================================
 // TYPE EXPORTS
 // ============================================================================
-

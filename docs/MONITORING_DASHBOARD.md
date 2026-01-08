@@ -594,3 +594,4 @@ console.log('Logger config:', logger.getConfig())
 ```
 
 This monitoring system provides comprehensive observability for production applications while maintaining performance and respecting user privacy.
+

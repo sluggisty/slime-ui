@@ -1,73 +1,70 @@
-import React, { useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
-import { Server, AlertTriangle, Clock, Activity } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
-import { api } from '../api/client'
-import { StatCard } from '../components/Card'
-import { Badge } from '../components/Table'
-import type { HostSummary } from '../types'
-import styles from './Dashboard.module.css'
+import React, { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
+import { Server, AlertTriangle, Clock, Activity } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import { api } from '../api/client';
+import { StatCard } from '../components/Card';
+import { Badge } from '../components/Table';
+import type { HostSummary } from '../types';
+import styles from './Dashboard.module.css';
 
 export default function Dashboard() {
-  const navigate = useNavigate()
-  
+  const navigate = useNavigate();
+
   const { data: hostsData, isLoading: hostsLoading } = useQuery({
     queryKey: ['hosts'],
     queryFn: api.getHosts,
-  })
-  
-  const totalHosts = hostsData?.total ?? 0
-  const hosts = useMemo(() => hostsData?.hosts ?? [], [hostsData?.hosts])
-  
+  });
+
+  const totalHosts = hostsData?.total ?? 0;
+  const hosts = useMemo(() => hostsData?.hosts ?? [], [hostsData?.hosts]);
+
   // Calculate active hosts (seen in last hour)
   // Calculate hourAgo once using useMemo to avoid calling Date.now() during render
   // eslint-disable-next-line react-hooks/purity
-  const hourAgo = useMemo(() => new Date(Date.now() - 60 * 60 * 1000), [])
+  const hourAgo = useMemo(() => new Date(Date.now() - 60 * 60 * 1000), []);
   const activeHosts = useMemo(() => {
     return hosts.filter(h => {
-      const lastSeen = new Date(h.last_seen)
-      return lastSeen > hourAgo
-    }).length
-  }, [hosts, hourAgo])
-  
+      const lastSeen = new Date(h.last_seen);
+      return lastSeen > hourAgo;
+    }).length;
+  }, [hosts, hourAgo]);
+
   return (
     <div className={styles.dashboard}>
       {/* Stats Grid */}
       <div className={styles.statsGrid}>
         <StatCard
-          title="Total Hosts"
+          title='Total Hosts'
           value={totalHosts}
-          subtitle="Systems monitored"
+          subtitle='Systems monitored'
           icon={<Server size={20} />}
-          color="accent"
+          color='accent'
         />
         <StatCard
-          title="Active Hosts"
+          title='Active Hosts'
           value={activeHosts}
-          subtitle="Seen in last hour"
+          subtitle='Seen in last hour'
           icon={<Activity size={20} />}
           color={activeHosts > 0 ? 'success' : 'warning'}
         />
         <StatCard
-          title="Stale Hosts"
+          title='Stale Hosts'
           value={totalHosts - activeHosts}
-          subtitle="Not seen recently"
+          subtitle='Not seen recently'
           icon={<AlertTriangle size={20} />}
           color={totalHosts - activeHosts > 0 ? 'warning' : 'success'}
         />
       </div>
-      
+
       {/* Main Content */}
       <div className={styles.mainGrid}>
         {/* All Hosts */}
         <section className={styles.section}>
           <div className={styles.sectionHeader}>
             <h2>Recent Hosts</h2>
-            <button 
-              className={styles.viewAllBtn}
-              onClick={() => navigate('/hosts')}
-            >
+            <button className={styles.viewAllBtn} onClick={() => navigate('/hosts')}>
               View All
             </button>
           </div>
@@ -81,26 +78,36 @@ export default function Dashboard() {
                 <span>Run snail-core on your systems to start collecting data</span>
               </div>
             ) : (
-              hosts.slice(0, 8).map((host) => (
-                <HostCard 
-                  key={host.host_id} 
-                  host={host}
-                  hourAgo={hourAgo}
-                  onClick={() => navigate(`/hosts/${host.host_id}`)}
-                />
-              ))
+              hosts
+                .slice(0, 8)
+                .map(host => (
+                  <HostCard
+                    key={host.host_id}
+                    host={host}
+                    hourAgo={hourAgo}
+                    onClick={() => navigate(`/hosts/${host.host_id}`)}
+                  />
+                ))
             )}
           </div>
         </section>
       </div>
     </div>
-  )
+  );
 }
 
-function HostCard({ host, onClick, hourAgo }: { host: HostSummary; onClick: () => void; hourAgo: Date }) {
-  const lastSeen = new Date(host.last_seen)
-  const isActive = lastSeen > hourAgo
-  
+function HostCard({
+  host,
+  onClick,
+  hourAgo,
+}: {
+  host: HostSummary;
+  onClick: () => void;
+  hourAgo: Date;
+}) {
+  const lastSeen = new Date(host.last_seen);
+  const isActive = lastSeen > hourAgo;
+
   return (
     <div className={styles.hostCard} onClick={onClick}>
       <div className={styles.hostIcon}>
@@ -113,14 +120,8 @@ function HostCard({ host, onClick, hourAgo }: { host: HostSummary; onClick: () =
           {formatDistanceToNow(lastSeen, { addSuffix: true })}
         </span>
       </div>
-      <Badge variant={isActive ? 'success' : 'warning'}>
-        {isActive ? 'Active' : 'Stale'}
-      </Badge>
-      <Activity 
-        size={16} 
-        className={`${styles.hostStatus} ${isActive ? styles.active : ''}`}
-      />
+      <Badge variant={isActive ? 'success' : 'warning'}>{isActive ? 'Active' : 'Stale'}</Badge>
+      <Activity size={16} className={`${styles.hostStatus} ${isActive ? styles.active : ''}`} />
     </div>
-  )
+  );
 }
-

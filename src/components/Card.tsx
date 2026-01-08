@@ -1,30 +1,30 @@
-import type { ReactNode } from 'react'
-import styles from './Card.module.css'
+import type { ReactNode } from 'react';
+import styles from './Card.module.css';
 
 interface CardProps {
-  children: ReactNode
-  className?: string
-  onClick?: () => void
-  hoverable?: boolean
+  children: ReactNode;
+  className?: string;
+  onClick?: () => void;
+  hoverable?: boolean;
 }
 
 export function Card({ children, className = '', onClick, hoverable }: CardProps) {
   return (
-    <div 
+    <div
       className={`${styles.card} ${hoverable ? styles.hoverable : ''} ${className}`}
       onClick={onClick}
     >
       {children}
     </div>
-  )
+  );
 }
 
 interface StatCardProps {
-  title: string
-  value: string | number
-  subtitle?: string
-  icon?: ReactNode
-  color?: 'default' | 'success' | 'warning' | 'error' | 'accent'
+  title: string;
+  value: string | number;
+  subtitle?: string;
+  icon?: ReactNode;
+  color?: 'default' | 'success' | 'warning' | 'error' | 'accent';
 }
 
 export function StatCard({ title, value, subtitle, icon, color = 'default' }: StatCardProps) {
@@ -37,8 +37,5 @@ export function StatCard({ title, value, subtitle, icon, color = 'default' }: St
       <div className={styles.statValue}>{value}</div>
       {subtitle && <div className={styles.statSubtitle}>{subtitle}</div>}
     </div>
-  )
+  );
 }
-
-
-

@@ -65,7 +65,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .empty {
@@ -109,6 +111,3 @@
   background: rgba(59, 130, 246, 0.15);
   color: var(--color-info);
 }
-
-
-

@@ -1,13 +1,13 @@
-import { fetchApi } from './client'
-import type { User, CreateUserRequest, UpdateUserRoleRequest } from '../types'
+import { fetchApi } from './client';
+import type { User, CreateUserRequest, UpdateUserRoleRequest } from '../types';
 
 export const usersApi = {
   /**
    * List all users in the current organization (admin only)
    */
   listUsers: async (): Promise<User[]> => {
-    const data = await fetchApi<{ users: User[]; total: number }>('/users')
-    return data.users || []
+    const data = await fetchApi<{ users: User[]; total: number }>('/users');
+    return data.users || [];
   },
 
   /**
@@ -17,7 +17,7 @@ export const usersApi = {
     return fetchApi<User>('/users', {
       method: 'POST',
       body: JSON.stringify(userData),
-    })
+    });
   },
 
   /**
@@ -27,7 +27,7 @@ export const usersApi = {
     return fetchApi<User>(`/users/${userId}/role`, {
       method: 'PUT',
       body: JSON.stringify(role),
-    })
+    });
   },
 
   /**
@@ -36,7 +36,6 @@ export const usersApi = {
   deleteUser: async (userId: string): Promise<void> => {
     await fetchApi(`/users/${userId}`, {
       method: 'DELETE',
-    })
+    });
   },
-}
-
+};
