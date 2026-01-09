@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  slime-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080}
+        VITE_APP_VERSION: ${VITE_APP_VERSION:-0.1.0}
+        VITE_APP_NAME: ${VITE_APP_NAME:-Slime UI}
+    container_name: slime-ui-dev
+    ports:
+      - '3000:80'
+    environment:
+      - NODE_ENV=development
+    volumes:
+      # Mount source for hot reload (optional, for development)
+      - ./src:/app/src:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost/']
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - slime-network
+
+networks:
+  slime-network:
+    driver: bridge
+
