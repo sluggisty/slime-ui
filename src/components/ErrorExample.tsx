@@ -1,66 +1,51 @@
-import React, { useState } from 'react'
-import { useError, useErrorBoundary } from '../contexts/ErrorContext'
-import { ErrorSeverity, ErrorCategory } from '../utils/errorHandler'
+import React, { useState } from 'react';
+import { useError, useErrorBoundary } from '../contexts/ErrorContext';
+import { ErrorSeverity, ErrorCategory } from '../utils/errorHandler';
 
 /**
  * Example component demonstrating error context usage
  */
 export const ErrorExample: React.FC = () => {
-  const {
-    addError,
-    addNetworkError,
-    addAuthError,
-    messages,
-    clearMessages,
-    stats,
-    isLoading
-  } = useError()
+  const { addError, addNetworkError, addAuthError, messages, clearMessages, stats, isLoading } =
+    useError();
 
-  const { captureError } = useErrorBoundary()
-  const [testType, setTestType] = useState<string>('')
+  const { captureError } = useErrorBoundary();
+  const [testType, setTestType] = useState<string>('');
 
   const triggerDifferentErrors = async () => {
     switch (testType) {
       case 'manual':
-        addError(
-          new Error('This is a manual error'),
-          ErrorCategory.RUNTIME,
-          ErrorSeverity.MEDIUM
-        )
-        break
+        addError(new Error('This is a manual error'), ErrorCategory.RUNTIME, ErrorSeverity.MEDIUM);
+        break;
 
       case 'network':
         // Simulate a network error
         try {
-          await fetch('/api/nonexistent-endpoint')
+          await fetch('/api/nonexistent-endpoint');
         } catch (error) {
-          addNetworkError(error as Error, '/api/nonexistent-endpoint', 'GET', 404)
+          addNetworkError(error as Error, '/api/nonexistent-endpoint', 'GET', 404);
         }
-        break
+        break;
 
       case 'auth':
-        addAuthError(new Error('Session expired'))
-        break
+        addAuthError(new Error('Session expired'));
+        break;
 
       case 'component':
         // Trigger a component error that will be caught by error boundary
-        throw new Error('Component error example')
+        throw new Error('Component error example');
 
       case 'async':
         // Simulate an async error
         setTimeout(() => {
-          captureError(new Error('Async component error'))
-        }, 1000)
-        break
+          captureError(new Error('Async component error'));
+        }, 1000);
+        break;
 
       default:
-        addError(
-          new Error('Unknown test type'),
-          ErrorCategory.UNKNOWN,
-          ErrorSeverity.LOW
-        )
+        addError(new Error('Unknown test type'), ErrorCategory.UNKNOWN, ErrorSeverity.LOW);
     }
-  }
+  };
 
   return (
     <div style={{ padding: '2rem', border: '1px solid #ccc', borderRadius: '8px' }}>
@@ -71,15 +56,15 @@ export const ErrorExample: React.FC = () => {
           <strong>Test Type:</strong>
           <select
             value={testType}
-            onChange={(e) => setTestType(e.target.value)}
+            onChange={e => setTestType(e.target.value)}
             style={{ marginLeft: '0.5rem' }}
           >
-            <option value="">Select test type...</option>
-            <option value="manual">Manual Error</option>
-            <option value="network">Network Error</option>
-            <option value="auth">Auth Error</option>
-            <option value="component">Component Error</option>
-            <option value="async">Async Error</option>
+            <option value=''>Select test type...</option>
+            <option value='manual'>Manual Error</option>
+            <option value='network'>Network Error</option>
+            <option value='auth'>Auth Error</option>
+            <option value='component'>Component Error</option>
+            <option value='async'>Async Error</option>
           </select>
         </label>
       </div>
@@ -110,7 +95,7 @@ export const ErrorExample: React.FC = () => {
                 marginBottom: '0.5rem',
                 border: '1px solid #ffc107',
                 borderRadius: '4px',
-                backgroundColor: '#fff3cd'
+                backgroundColor: '#fff3cd',
               }}
             >
               <strong>{message.title}</strong>: {message.message}
@@ -149,14 +134,31 @@ export const ErrorExample: React.FC = () => {
       </div>
 
       {/* Instructions */}
-      <div style={{ fontSize: '0.9rem', color: '#666', borderTop: '1px solid #eee', paddingTop: '1rem' }}>
+      <div
+        style={{
+          fontSize: '0.9rem',
+          color: '#666',
+          borderTop: '1px solid #eee',
+          paddingTop: '1rem',
+        }}
+      >
         <h4>How to use the Error Context:</h4>
         <ul>
-          <li><strong>Manual Errors:</strong> Use <code>addError()</code> for custom errors</li>
-          <li><strong>Network Errors:</strong> Use <code>addNetworkError()</code> for API failures</li>
-          <li><strong>Auth Errors:</strong> Use <code>addAuthError()</code> for authentication issues</li>
-          <li><strong>Component Errors:</strong> Use <code>useErrorBoundary()</code> hook</li>
-          <li><strong>Statistics:</strong> Access error stats via the context</li>
+          <li>
+            <strong>Manual Errors:</strong> Use <code>addError()</code> for custom errors
+          </li>
+          <li>
+            <strong>Network Errors:</strong> Use <code>addNetworkError()</code> for API failures
+          </li>
+          <li>
+            <strong>Auth Errors:</strong> Use <code>addAuthError()</code> for authentication issues
+          </li>
+          <li>
+            <strong>Component Errors:</strong> Use <code>useErrorBoundary()</code> hook
+          </li>
+          <li>
+            <strong>Statistics:</strong> Access error stats via the context
+          </li>
         </ul>
 
         <p>
@@ -165,7 +167,7 @@ export const ErrorExample: React.FC = () => {
         </p>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ErrorExample
+export default ErrorExample;

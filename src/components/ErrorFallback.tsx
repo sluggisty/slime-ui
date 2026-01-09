@@ -1,7 +1,7 @@
-import React from 'react'
-import { AlertTriangle, RefreshCw, Bug, Home, ChevronLeft } from 'lucide-react'
-import { ErrorFallbackProps } from './ErrorBoundary'
-import styles from './ErrorFallback.module.css'
+import React from 'react';
+import { AlertTriangle, RefreshCw, Bug, Home, ChevronLeft } from 'lucide-react';
+import { ErrorFallbackProps } from './ErrorBoundary';
+import styles from './ErrorFallback.module.css';
 
 /**
  * Error Fallback component that displays user-friendly error UI
@@ -15,10 +15,10 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
   onReport,
   onReset,
   canRetry = false,
-  level = 'component'
+  level = 'component',
 }) => {
-  const isDevelopment = process.env.NODE_ENV === 'development'
-  const isGlobalError = level === 'global'
+  const isDevelopment = !import.meta.env.PROD;
+  const isGlobalError = level === 'global';
 
   // Determine error severity and messaging based on level
   const getErrorConfig = () => {
@@ -26,31 +26,33 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
       case 'global':
         return {
           title: 'Something went wrong',
-          message: 'The application encountered an unexpected error. Please refresh the page to continue.',
+          message:
+            'The application encountered an unexpected error. Please refresh the page to continue.',
           icon: AlertTriangle,
           showHomeButton: true,
-          showDetails: isDevelopment
-        }
+          showDetails: isDevelopment,
+        };
       case 'route':
         return {
           title: 'Page Error',
-          message: 'This page encountered an error. You can try refreshing or go back to the previous page.',
+          message:
+            'This page encountered an error. You can try refreshing or go back to the previous page.',
           icon: AlertTriangle,
           showBackButton: true,
-          showDetails: isDevelopment
-        }
+          showDetails: isDevelopment,
+        };
       default:
         return {
           title: 'Component Error',
           message: 'A part of this page encountered an error. You can try refreshing this section.',
           icon: Bug,
-          showDetails: isDevelopment
-        }
+          showDetails: isDevelopment,
+        };
     }
-  }
+  };
 
-  const config = getErrorConfig()
-  const IconComponent = config.icon
+  const config = getErrorConfig();
+  const IconComponent = config.icon;
 
   return (
     <div className={styles.container}>
@@ -65,22 +67,14 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
 
           <div className={styles.actions}>
             {canRetry && onRetry && (
-              <button
-                onClick={onRetry}
-                className={styles.retryButton}
-                aria-label="Try again"
-              >
+              <button onClick={onRetry} className={styles.retryButton} aria-label='Try again'>
                 <RefreshCw size={16} />
                 Try Again
               </button>
             )}
 
             {onReset && (
-              <button
-                onClick={onReset}
-                className={styles.resetButton}
-                aria-label="Reset error"
-              >
+              <button onClick={onReset} className={styles.resetButton} aria-label='Reset error'>
                 Reset
               </button>
             )}
@@ -89,7 +83,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
               <button
                 onClick={() => window.history.back()}
                 className={styles.secondaryButton}
-                aria-label="Go back"
+                aria-label='Go back'
               >
                 <ChevronLeft size={16} />
                 Go Back
@@ -98,9 +92,9 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
 
             {config.showHomeButton && (
               <button
-                onClick={() => window.location.href = '/'}
+                onClick={() => (window.location.href = '/')}
                 className={styles.secondaryButton}
-                aria-label="Go to home"
+                aria-label='Go to home'
               >
                 <Home size={16} />
                 Go Home
@@ -110,18 +104,14 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
             <button
               onClick={() => window.location.reload()}
               className={styles.secondaryButton}
-              aria-label="Refresh page"
+              aria-label='Refresh page'
             >
               <RefreshCw size={16} />
               Refresh Page
             </button>
 
             {onReport && (
-              <button
-                onClick={onReport}
-                className={styles.reportButton}
-                aria-label="Report error"
-              >
+              <button onClick={onReport} className={styles.reportButton} aria-label='Report error'>
                 <Bug size={16} />
                 Report Error
               </button>
@@ -130,9 +120,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
 
           {config.showDetails && (
             <details className={styles.details}>
-              <summary className={styles.detailsSummary}>
-                Error Details (Development Only)
-              </summary>
+              <summary className={styles.detailsSummary}>Error Details (Development Only)</summary>
 
               <div className={styles.errorDetails}>
                 <div className={styles.detailSection}>
@@ -157,9 +145,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
                 {context && (
                   <div className={styles.detailSection}>
                     <h4>Context:</h4>
-                    <pre className={styles.context}>
-                      {JSON.stringify(context, null, 2)}
-                    </pre>
+                    <pre className={styles.context}>{JSON.stringify(context, null, 2)}</pre>
                   </div>
                 )}
               </div>
@@ -172,23 +158,18 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
             If this problem persists, please contact support with the error details above.
           </p>
           {context?.sessionId && (
-            <p className={styles.sessionId}>
-              Session ID: {context.sessionId}
-            </p>
+            <p className={styles.sessionId}>Session ID: {context.sessionId}</p>
           )}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 /**
  * Minimal error fallback for critical errors
  */
-export const MinimalErrorFallback: React.FC<ErrorFallbackProps> = ({
-  onRetry,
-  canRetry
-}) => {
+export const MinimalErrorFallback: React.FC<ErrorFallbackProps> = ({ onRetry, canRetry }) => {
   return (
     <div className={styles.minimalContainer}>
       <div className={styles.minimalContent}>
@@ -201,23 +182,19 @@ export const MinimalErrorFallback: React.FC<ErrorFallbackProps> = ({
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
 /**
  * Inline error fallback for smaller components
  */
-export const InlineErrorFallback: React.FC<ErrorFallbackProps> = ({
-  onRetry,
-  canRetry,
-  error
-}) => {
+export const InlineErrorFallback: React.FC<ErrorFallbackProps> = ({ onRetry, canRetry, error }) => {
   return (
     <div className={styles.inlineContainer}>
       <div className={styles.inlineContent}>
         <Bug size={16} className={styles.inlineIcon} />
         <span className={styles.inlineText}>
-          {process.env.NODE_ENV === 'development' ? error.message : 'Component error'}
+          {!import.meta.env.PROD ? error.message : 'Component error'}
         </span>
         {canRetry && onRetry && (
           <button onClick={onRetry} className={styles.inlineRetry}>
@@ -226,5 +203,5 @@ export const InlineErrorFallback: React.FC<ErrorFallbackProps> = ({
         )}
       </div>
     </div>
-  )
-}
+  );
+};

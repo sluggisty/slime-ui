@@ -155,3 +155,4 @@ This CSP configuration follows OWASP CSP best practices:
 - [OWASP Content Security Policy Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html)
 - [MDN CSP Documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP)
 - [CSP Evaluator](https://csp-evaluator.withgoogle.com/)
+
